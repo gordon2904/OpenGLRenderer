@@ -13,13 +13,12 @@ GLEntityTriangle::GLEntityTriangle(float* vertices, unsigned int verticesLength)
    glEnableVertexAttribArray(0);
 }
 
-int GLEntityTriangle::Render(const unsigned int& shaderProgram)
+int GLEntityTriangle::Render(const unsigned int shaderProgram)
 {
-   if(!mVisible)
+   if(!GLEntity::Render(shaderProgram))
    {
       return 0;
    }
-   GLEntity::Render(shaderProgram);
    glDrawArrays(GL_TRIANGLES, 0, mVerticesLength / 3);
    return 1;
 }

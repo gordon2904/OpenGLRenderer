@@ -8,6 +8,6 @@ private:
    unsigned int mVerticesLength;
 public:
    GLEntityTriangle(float *vertices, unsigned int verticesLength);
-   int Render(const unsigned int& shaderProgram);
+   int Render(const unsigned int shaderProgram = 0);
 };
 

@@ -12,5 +12,5 @@ private:
 public:
    GLEntityPolygon(float* vertices, unsigned int verticesLength, unsigned int* indices, unsigned int indicesLength); 
    ~GLEntityPolygon();
-   int Render(const unsigned int& shaderProgram);
+   int Render(const unsigned int shaderProgram = 0);
 };

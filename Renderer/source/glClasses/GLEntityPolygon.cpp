@@ -26,13 +26,12 @@ GLEntityPolygon::GLEntityPolygon(float* vertices, unsigned int verticesLength, u
    glEnableVertexAttribArray(0);
 }
 
-int GLEntityPolygon::Render(const unsigned int& shaderProgram)
+int GLEntityPolygon::Render(const unsigned int shaderProgram)
 {
-   if(!mVisible)
+   if(!GLEntity::Render(shaderProgram))
    {
       return 0;
    }
-   GLEntity::Render(shaderProgram);
    glDrawElements(GL_TRIANGLES, mIndicesLength, GL_UNSIGNED_INT, 0);
    return 1;
 }

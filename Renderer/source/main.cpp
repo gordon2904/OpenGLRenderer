@@ -119,11 +119,11 @@ int initializeShaderProgram(GLuint& shaderProgram)
 {
    GLuint vertexShader;
    GLuint fragmentShader;
-   if(!loadShader(vertexShader, vertexShaderSource, GLShaderType::VERTEX_SHADER, "vertex shader"))
+   if(!loadShader(vertexShader, Shaders::uniforms::vertexShader, GLShaderType::VERTEX_SHADER, "vertex shader"))
    {
       return 0;
    }
-   if(!loadShader(fragmentShader, fragmentShaderSource, GLShaderType::FRAGMENT_SHADER, "fragment shader"))
+   if(!loadShader(fragmentShader, Shaders::uniforms::fragmentShader, GLShaderType::FRAGMENT_SHADER, "fragment shader"))
    {
       return 0;
    }
@@ -162,6 +162,10 @@ int main(int argc, char** argv)
 
    glViewport(0, 0, 800, 600);
    glfwSetFramebufferSizeCallback(window, [] (GLFWwindow* window, int width, int height) { glViewport(0, 0, width, height); });
+   int maxVertexAttributes;
+   glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxVertexAttributes);
+   LOG_INFO("Max number of vertex attributes supported: {0}", maxVertexAttributes);
+
 
    GLuint shaderProgram;   
    if(!initializeShaderProgram(shaderProgram))
@@ -171,6 +175,20 @@ int main(int argc, char** argv)
 
    //make some triangles and rectangles
    std::shared_ptr<GLEntityTriangle> glTriangle = std::make_shared<GLEntityTriangle>((float*)triangleVertices, triangleVerticesLength);
+   glTriangle->setShaderProgram(shaderProgram);
+   glTriangle->setUpdateLambda([=] () 
+      {
+         unsigned int shaderProgram = glTriangle->getShaderProgram();
+         if(shaderProgram == 0)
+         {
+            LOG_WARN("glTriangle's shaderProgram member variable has not been set");
+            return;
+         }
+         float timeValue = (float)glfwGetTime();
+         float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
+         int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
+         glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+      });
    std::shared_ptr<GLEntityPolygon> glRectangle = std::make_shared<GLEntityPolygon>((float*)rectangleVertices, rectangleVerticesLength, (unsigned int*)rectangleIndices, rectangleIndicesLength);
 
 
@@ -183,9 +201,10 @@ int main(int argc, char** argv)
       //rendering
       glClearColor(0.0f, 0.3f, 0.9f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT);
+
       for(auto entity : entities)
       {
-         entity->Render(shaderProgram);
+         entity->Render();
       }
       glBindVertexArray(0);
 
