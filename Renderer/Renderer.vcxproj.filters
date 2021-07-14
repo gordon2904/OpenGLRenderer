@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="bin">
+      <UniqueIdentifier>{94d314d3-c9f9-493f-92cd-c1d57d9202ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\utils">
+      <UniqueIdentifier>{64725e30-646e-47db-8660-042f162a1697}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\utils\glad">
+      <UniqueIdentifier>{2b660fdb-60b2-4c8e-ab7d-a0538fd53342}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\utils\logger">
+      <UniqueIdentifier>{e4a96b80-5b20-4a43-a64b-00f444a3515a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\utils">
+      <UniqueIdentifier>{4ded7bca-dcc7-4373-b3a0-6e3dc88a37f5}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="source\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\utils\glad\glad.c">
+      <Filter>Source Files\utils\glad</Filter>
+    </ClCompile>
+    <ClCompile Include="source\utils\logger\Logger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\glClasses\GLEntity.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\glClasses\GLEntityTriangle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\glClasses\GLEntityPolygon.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="bin\x64\freeglut.dll">
+      <Filter>bin</Filter>
+    </None>
+    <None Include="bin\x86\freeglut.dll">
+      <Filter>bin</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="source\utils\logger\Logger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utils\shaders\Shaders.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utils\glenums\GLEnums.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\glClasses\GLEntity.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\glClasses\GLEntityTriangle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\glClasses\GLEntityPolygon.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
