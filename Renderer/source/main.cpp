@@ -115,15 +115,15 @@ int loadShader(GLuint& shader, const char* source, GLShaderType shaderType, cons
    return 1;
 }
 
-int initializeShaderProgram(GLuint& shaderProgram)
+int initializeShaderProgram(GLuint& shaderProgram, const char* vertexShaderSrc, const char* fragShaderSrc)
 {
    GLuint vertexShader;
    GLuint fragmentShader;
-   if(!loadShader(vertexShader, Shaders::uniforms::vertexShader, GLShaderType::VERTEX_SHADER, "vertex shader"))
+   if(!loadShader(vertexShader, vertexShaderSrc, GLShaderType::VERTEX_SHADER, "vertex shader"))
    {
       return 0;
    }
-   if(!loadShader(fragmentShader, Shaders::uniforms::fragmentShader, GLShaderType::FRAGMENT_SHADER, "fragment shader"))
+   if(!loadShader(fragmentShader, fragShaderSrc, GLShaderType::FRAGMENT_SHADER, "fragment shader"))
    {
       return 0;
    }
@@ -168,7 +168,13 @@ int main(int argc, char** argv)
 
 
    GLuint shaderProgram;   
-   if(!initializeShaderProgram(shaderProgram))
+   if(!initializeShaderProgram(shaderProgram, Shaders::uniforms::vertexShader, Shaders::uniforms::fragmentShader))
+   {
+      return -1;
+   }
+
+   GLuint overrideShaderProgram;
+   if(!initializeShaderProgram(overrideShaderProgram, Shaders::standard::vertexShader, Shaders::standard::fragmentShader))
    {
       return -1;
    }
@@ -190,8 +196,6 @@ int main(int argc, char** argv)
          glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
       });
    std::shared_ptr<GLEntityPolygon> glRectangle = std::make_shared<GLEntityPolygon>((float*)rectangleVertices, rectangleVerticesLength, (unsigned int*)rectangleIndices, rectangleIndicesLength);
-
-
    std::shared_ptr<GLEntity> entities[] = { glTriangle, glRectangle } ;
 
    while(!glfwWindowShouldClose(window))
@@ -205,6 +209,7 @@ int main(int argc, char** argv)
       for(auto entity : entities)
       {
          entity->Render();
+         //entity->Render(overrideShaderProgram);
       }
       glBindVertexArray(0);
 
@@ -213,6 +218,7 @@ int main(int argc, char** argv)
    }
 
    glDeleteProgram(shaderProgram);
+   glDeleteProgram(overrideShaderProgram);
 
 
    glfwTerminate();
