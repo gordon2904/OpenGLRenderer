@@ -5,7 +5,7 @@
 
 GLEntity::GLEntity(void* data, unsigned int dataLength, std::vector<VertexAttribute>& vertexAttributes) : GLEntity(data, dataLength, vertexAttributes, nullptr, 0) {}
 
-GLEntity::GLEntity(void* data, unsigned int _dataLength, std::vector<VertexAttribute>& vertexAttributes, void* elements, unsigned int _elementsLength) : ebo(0), mVisible(true), mShaderProgram(0), mUpdateLambda([] () {}), vboDataLength(_dataLength), elementsLength(_elementsLength)
+GLEntity::GLEntity(void* data, unsigned int _dataLength, std::vector<VertexAttribute>& vertexAttributes, void* elements, unsigned int _elementsLength) : shader(nullptr), ebo(0), mVisible(true), mUpdateLambda([] () {}), vboDataLength(_dataLength), elementsLength(_elementsLength)
 {
    glGenVertexArrays(1, &vao);
    glGenBuffers(1, &vbo);
@@ -68,20 +68,20 @@ GLEntity::~GLEntity()
    glDeleteBuffers(1, &vbo);
 }
 
-int GLEntity::Render(const unsigned int shaderProgram)
+int GLEntity::Render(std::shared_ptr<Shader> overrideShader)
 {
    if(!mVisible)
    {
       return 0;
    }
    mUpdateLambda();
-   if(shaderProgram > 0)
+   if(overrideShader != nullptr)
    {
-      glUseProgram(shaderProgram);
+      overrideShader->use();
    }
-   else if(mShaderProgram > 0)
+   else if(shader != nullptr)
    {
-      glUseProgram(mShaderProgram);
+      shader->use();
    }
    else
    {
@@ -111,14 +111,14 @@ void GLEntity::setVisible(const bool& visible)
 }
 
 
-void GLEntity::setShaderProgram(unsigned int shaderProgram)
+void GLEntity::setShaderProgram(std::shared_ptr<Shader> _shader)
 {
-   mShaderProgram = shaderProgram;
+   shader = _shader;
 }
 
-unsigned int GLEntity::getShaderProgram()
+std::shared_ptr<Shader> GLEntity::getShaderProgram()
 {
-   return mShaderProgram;
+   return shader;
 }
 
 

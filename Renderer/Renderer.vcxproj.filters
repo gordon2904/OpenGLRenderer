@@ -42,6 +42,9 @@
     <ClCompile Include="source\glClasses\GLEntity.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\glClasses\Shader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="bin\x64\freeglut.dll">
@@ -62,6 +65,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\glClasses\GLEntity.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\glClasses\Shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

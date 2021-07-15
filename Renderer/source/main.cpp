@@ -12,6 +12,7 @@
 #include<GLFW/glfw3.h>
 
 #include"glClasses/GLEntity.h"
+#include"glClasses/Shader.h"
 
 GLFWwindow* window = nullptr;
 const unsigned int INITIAL_SCREEN_WIDTH = 800;
@@ -166,22 +167,6 @@ int main(int argc, char** argv)
    glViewport(0, 0, 800, 600);
    glfwSetFramebufferSizeCallback(window, [] (GLFWwindow* window, int width, int height) { glViewport(0, 0, width, height); });
 
-   GLuint shaderProgram;   
-   if(!initializeShaderProgram(shaderProgram, Shaders::attributeColor::vertexShader, Shaders::attributeColor::fragmentShader))
-   {
-      return -1;
-   }
-
-   GLuint overrideShaderProgram;
-   if(!initializeShaderProgram(overrideShaderProgram, Shaders::standard::vertexShader, Shaders::standard::fragmentShader))
-   {
-      return -1;
-   }
-
-   //make some triangles and rectangles
-   //std::shared_ptr<GLEntityTriangle> glTriangle = std::make_shared<GLEntityTriangle>((float*)triangleVertices, triangleVerticesLength);
-
-
    float data[] = {
       // positions         // colors
        0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // bottom right
@@ -198,24 +183,20 @@ int main(int argc, char** argv)
       VertexAttribute(3, GL_FLOAT)
    };
 
+   std::shared_ptr<Shader> standardShader = std::make_shared<Shader>("standard");
    std::shared_ptr<GLEntity> glTriangle = std::make_shared<GLEntity>(data, 3, triangleVertexAttributes);
+   glTriangle->setUpdateLambda([=] () {
+      // update the uniform color
+      float timeValue = (float) glfwGetTime();
+      float greenValue = sin(timeValue) / 2.0f + 0.5f;
+      float vec4[] = { 0, greenValue, 0, 1 };
+      standardShader->setVec4("ourColor", vec4);
+      standardShader->setFloat("offset", greenValue);
+   });
+
    std::shared_ptr<GLEntity> glRectangle = std::make_shared<GLEntity>((void*)rectangleVertices, rectangleVerticesLength, rectangleVertexAttributes, (void*)rectangleIndices, rectangleIndicesLength);
-   glTriangle->setShaderProgram(shaderProgram);
-   glRectangle->setShaderProgram(overrideShaderProgram);
-   //glTriangle->setUpdateLambda([=] () 
-   //   {
-   //      unsigned int shaderProgram = glTriangle->getShaderProgram();
-   //      if(shaderProgram == 0)
-   //      {
-   //         LOG_WARN("glTriangle's shaderProgram member variable has not been set");
-   //         return;
-   //      }
-   //      float timeValue = (float)glfwGetTime();
-   //      float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
-   //      int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
-   //      glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
-   //   });
-   std::shared_ptr<GLEntity> entities[] = { glTriangle, glRectangle } ;
+   glTriangle->setShaderProgram(standardShader);
+   std::shared_ptr<GLEntity> entities[] = { glTriangle, glRectangle };
 
    while(!glfwWindowShouldClose(window))
    {
@@ -232,9 +213,6 @@ int main(int argc, char** argv)
       glfwSwapBuffers(window);
       glfwPollEvents();
    }
-
-   glDeleteProgram(shaderProgram);
-   glDeleteProgram(overrideShaderProgram);
 
    glfwTerminate();
    return 0;
