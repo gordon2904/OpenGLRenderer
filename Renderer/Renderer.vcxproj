@@ -19,8 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\glClasses\GLEntityPolygon.cpp" />
-    <ClCompile Include="source\glClasses\GLEntityTriangle.cpp" />
     <ClCompile Include="source\glClasses\GLEntity.cpp" />
     <ClCompile Include="source\utils\logger\Logger.cpp" />
     <ClCompile Include="source\main.cpp" />
@@ -31,10 +29,8 @@
     <None Include="bin\x86\freeglut.dll" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="source\glClasses\GLEntityPolygon.h" />
-    <ClInclude Include="source\glClasses\GLEntityTriangle.h" />
     <ClInclude Include="source\glClasses\GLEntity.h" />
-    <ClInclude Include="source\utils\glenums\GLEnums.h" />
+    <ClInclude Include="source\utils\glutils\GLUtils.h" />
     <ClInclude Include="source\utils\logger\Logger.h" />
     <ClInclude Include="source\utils\shaders\Shaders.h" />
   </ItemGroup>

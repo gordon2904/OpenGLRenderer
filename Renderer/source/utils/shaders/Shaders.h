@@ -57,4 +57,24 @@ namespace Shaders
          "   FragColor = ourColor;\n"
          "}\0";
    }
+   namespace attributeColor
+   {
+      const char* vertexShader = "#version 330 core\n"
+         "layout (location = 0) in vec3 aPos; // the position variable has attribute position 0\n"
+         "layout (location = 1) in vec3 aColor; // the position variable has attribute position 0\n"
+         "out vec3 ourColor; // specify a color output to the fragment shader\n"
+         "void main()\n"
+         "{\n"
+         "  gl_Position = vec4(aPos, 1.0); // see how we directly give a vec3 to vec4's constructor\n"
+         "  ourColor = aColor; // set the output variable to a dark-red color\n"
+         "}\0";
+
+      const char* fragmentShader = "#version 330 core\n"
+         "out vec4 FragColor;\n"
+         "in vec3 ourColor; // the input variable from the vertex shader (same name and same type)\n"
+         "void main()\n"
+         "{\n"
+         "   FragColor = vec4(ourColor, 1.0);\n"
+         "}\0";
+   }
 }

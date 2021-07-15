@@ -10,3 +10,10 @@ enum GLShaderType
    //TESS_EVALUATION_SHADER = GL_TESS_EVALUATION_SHADER, - Only available in GL >= 4.0
    //COMPUTE_SHADER = GL_COMPUTE_SHADER                  - Only available in GL >= 4.3
 };
+
+struct VertexAttribute
+{
+   VertexAttribute(unsigned int _size, unsigned int _type) : size(_size), type(_type) {}
+   unsigned int size;
+   unsigned int type;
+};

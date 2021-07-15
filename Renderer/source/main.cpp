@@ -6,13 +6,12 @@
 
 #include "utils/logger/Logger.h"
 #include "utils/shaders/Shaders.h"
-#include "utils/glenums/GLEnums.h"
+#include "utils/glutils/GLUtils.h"
 #include<iostream>
 #include<glad/glad.h>
 #include<GLFW/glfw3.h>
 
-#include"glClasses/GLEntityTriangle.h"
-#include"glClasses/GLEntityPolygon.h"
+#include"glClasses/GLEntity.h"
 
 GLFWwindow* window = nullptr;
 const unsigned int INITIAL_SCREEN_WIDTH = 800;
@@ -65,6 +64,10 @@ int initializeGLAD()
       return 0;
    }
    LOG_INFO("initialized GLAD succesfully");
+   int maxVertexAttributes;
+   glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxVertexAttributes);
+   LOG_INFO("Max number of vertex attributes supported: {0}", maxVertexAttributes);
+
    return 1;
 }
 
@@ -162,13 +165,9 @@ int main(int argc, char** argv)
 
    glViewport(0, 0, 800, 600);
    glfwSetFramebufferSizeCallback(window, [] (GLFWwindow* window, int width, int height) { glViewport(0, 0, width, height); });
-   int maxVertexAttributes;
-   glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxVertexAttributes);
-   LOG_INFO("Max number of vertex attributes supported: {0}", maxVertexAttributes);
-
 
    GLuint shaderProgram;   
-   if(!initializeShaderProgram(shaderProgram, Shaders::uniforms::vertexShader, Shaders::uniforms::fragmentShader))
+   if(!initializeShaderProgram(shaderProgram, Shaders::attributeColor::vertexShader, Shaders::attributeColor::fragmentShader))
    {
       return -1;
    }
@@ -180,38 +179,55 @@ int main(int argc, char** argv)
    }
 
    //make some triangles and rectangles
-   std::shared_ptr<GLEntityTriangle> glTriangle = std::make_shared<GLEntityTriangle>((float*)triangleVertices, triangleVerticesLength);
+   //std::shared_ptr<GLEntityTriangle> glTriangle = std::make_shared<GLEntityTriangle>((float*)triangleVertices, triangleVerticesLength);
+
+
+   float data[] = {
+      // positions         // colors
+       0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // bottom right
+      -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   // bottom left
+       0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // top 
+   };
+
+   std::vector<VertexAttribute> triangleVertexAttributes = {
+      VertexAttribute(3, GL_FLOAT),
+      VertexAttribute(3, GL_FLOAT)
+   };
+
+   std::vector<VertexAttribute> rectangleVertexAttributes = {
+      VertexAttribute(3, GL_FLOAT)
+   };
+
+   std::shared_ptr<GLEntity> glTriangle = std::make_shared<GLEntity>(data, 3, triangleVertexAttributes);
+   std::shared_ptr<GLEntity> glRectangle = std::make_shared<GLEntity>((void*)rectangleVertices, rectangleVerticesLength, rectangleVertexAttributes, (void*)rectangleIndices, rectangleIndicesLength);
    glTriangle->setShaderProgram(shaderProgram);
-   glTriangle->setUpdateLambda([=] () 
-      {
-         unsigned int shaderProgram = glTriangle->getShaderProgram();
-         if(shaderProgram == 0)
-         {
-            LOG_WARN("glTriangle's shaderProgram member variable has not been set");
-            return;
-         }
-         float timeValue = (float)glfwGetTime();
-         float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
-         int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
-         glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
-      });
-   std::shared_ptr<GLEntityPolygon> glRectangle = std::make_shared<GLEntityPolygon>((float*)rectangleVertices, rectangleVerticesLength, (unsigned int*)rectangleIndices, rectangleIndicesLength);
+   glRectangle->setShaderProgram(overrideShaderProgram);
+   //glTriangle->setUpdateLambda([=] () 
+   //   {
+   //      unsigned int shaderProgram = glTriangle->getShaderProgram();
+   //      if(shaderProgram == 0)
+   //      {
+   //         LOG_WARN("glTriangle's shaderProgram member variable has not been set");
+   //         return;
+   //      }
+   //      float timeValue = (float)glfwGetTime();
+   //      float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
+   //      int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
+   //      glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+   //   });
    std::shared_ptr<GLEntity> entities[] = { glTriangle, glRectangle } ;
 
    while(!glfwWindowShouldClose(window))
    {
       processInput(window);
 
-      //rendering
       glClearColor(0.0f, 0.3f, 0.9f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT);
 
       for(auto entity : entities)
       {
          entity->Render();
-         //entity->Render(overrideShaderProgram);
       }
-      glBindVertexArray(0);
 
       glfwSwapBuffers(window);
       glfwPollEvents();
@@ -219,7 +235,6 @@ int main(int argc, char** argv)
 
    glDeleteProgram(shaderProgram);
    glDeleteProgram(overrideShaderProgram);
-
 
    glfwTerminate();
    return 0;
