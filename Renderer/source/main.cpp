@@ -5,7 +5,6 @@
 */
 
 #include "utils/logger/Logger.h"
-#include "utils/shaders/Shaders.h"
 #include "utils/glutils/GLUtils.h"
 #include<iostream>
 #include<glad/glad.h>
