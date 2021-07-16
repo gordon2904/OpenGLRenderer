@@ -72,7 +72,7 @@ GLEntity::~GLEntity()
 }
 
 int GLEntity::useShader(std::shared_ptr<Shader> overrideShader)
-{ 
+{
    if(overrideShader != nullptr)
    {
       overrideShader->use();
