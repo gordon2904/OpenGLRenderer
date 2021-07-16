@@ -42,10 +42,7 @@
     <ClCompile Include="source\glClasses\GLEntity.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\glClasses\GLEntityTriangle.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\glClasses\GLEntityPolygon.cpp">
+    <ClCompile Include="source\glClasses\Shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -61,19 +58,13 @@
     <ClInclude Include="source\utils\logger\Logger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\utils\shaders\Shaders.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\utils\glenums\GLEnums.h">
+    <ClInclude Include="source\utils\glutils\GLUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\glClasses\GLEntity.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\glClasses\GLEntityTriangle.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\glClasses\GLEntityPolygon.h">
+    <ClInclude Include="source\glClasses\Shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
