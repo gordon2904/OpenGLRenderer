@@ -34,7 +34,6 @@
     <ClInclude Include="source\glClasses\GLEntity.h" />
     <ClInclude Include="source\utils\glutils\GLUtils.h" />
     <ClInclude Include="source\utils\logger\Logger.h" />
-    <ClInclude Include="source\utils\shaders\Shaders.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

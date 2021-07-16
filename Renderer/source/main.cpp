@@ -17,13 +17,14 @@ GLFWwindow* window = nullptr;
 const unsigned int INITIAL_SCREEN_WIDTH = 800;
 const unsigned int INITIAL_SCREEN_HEIGHT = 600;
 
-//triangle with vertices in counter clockwise order starting from bottom left
-const float triangleVertices[] = {
-   -0.5f, -0.5f, 0.0f,
-    0.5f, -0.5f, 0.0f,
-    0.0f,  0.75f, 0.0f
+
+float triangleData[] = {
+   // positions         // colors
+    0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // bottom right
+   -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   // bottom left
+    0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // top 
 };
-const unsigned int triangleVerticesLength = sizeof(triangleVertices) / sizeof(float);
+const unsigned int triangleDataSize = sizeof(triangleData);
 
 const float rectangleVertices[] = {
   0.5f,  0.5f, 0.0f,  // top right
@@ -31,7 +32,7 @@ const float rectangleVertices[] = {
  -0.5f, -0.5f, 0.0f,  // bottom left
  -0.5f,  0.5f, 0.0f   // top left 
 };
-const unsigned int rectangleVerticesLength = sizeof(rectangleVertices) / sizeof(float);
+const unsigned int rectangleVerticesSize = sizeof(rectangleVertices);
 const unsigned int rectangleIndices[] = {
  0, 1, 3,   // first triangle
  1, 2, 3    // second triangle
@@ -77,83 +78,6 @@ void processInput(GLFWwindow* window)
       glfwSetWindowShouldClose(window, true);
 }
 
-int loadShader(GLuint& shader, const char* source, GLShaderType shaderType, const char* shaderName = nullptr)
-{
-   shader = glCreateShader(shaderType);
-   const bool hasShaderName = shaderName != nullptr;
-
-   glShaderSource(shader, 1, &source, nullptr);
-   glCompileShader(shader);
-
-   int  success;
-   char infoLog[512];
-   glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-   if(!success)
-   {
-      glGetShaderInfoLog(shader, 512, nullptr, infoLog);
-      if(hasShaderName)
-      {
-         LOG_ERROR("Failed to compile shader: {0}\n"
-            "{1}\n"
-            "infoLog: {2}",
-            shaderName, source, infoLog);
-      }
-      else
-      {
-         LOG_ERROR("Failed to compile shader: \n"
-            "{0}\n"
-            "infoLog: {1}",
-            source, infoLog);
-      }
-      return 0;
-   }
-   if(hasShaderName)
-   {
-      LOG_INFO("Succesfully compiled shader: {0}", shaderName);
-   }
-   else
-   {
-      LOG_INFO("Succesfully compiled shader");
-   }
-   return 1;
-}
-
-int initializeShaderProgram(GLuint& shaderProgram, const char* vertexShaderSrc, const char* fragShaderSrc)
-{
-   GLuint vertexShader;
-   GLuint fragmentShader;
-   if(!loadShader(vertexShader, vertexShaderSrc, GLShaderType::VERTEX_SHADER, "vertex shader"))
-   {
-      return 0;
-   }
-   if(!loadShader(fragmentShader, fragShaderSrc, GLShaderType::FRAGMENT_SHADER, "fragment shader"))
-   {
-      return 0;
-   }
-   shaderProgram = glCreateProgram();
-   glAttachShader(shaderProgram, vertexShader);
-   glAttachShader(shaderProgram, fragmentShader);
-   glLinkProgram(shaderProgram);
-
-
-   int  success;
-   char infoLog[512];
-   glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-   if(!success)
-   {
-      glGetProgramInfoLog(shaderProgram, 512, nullptr, infoLog);
-      LOG_ERROR("Failed to link shader program\n"
-         "GLuint: {0}\n"
-         "infoLog: {1}",
-         shaderProgram, infoLog);
-      return 0;
-   }
-      LOG_INFO("Succesfully linked shader program: {0}", shaderProgram);
-   glDeleteShader(vertexShader);
-   glDeleteShader(fragmentShader);
-   return 1;
-}
-
 int main(int argc, char** argv)
 {
    if(!initializeGLFWwindow()) {
@@ -166,13 +90,6 @@ int main(int argc, char** argv)
    glViewport(0, 0, 800, 600);
    glfwSetFramebufferSizeCallback(window, [] (GLFWwindow* window, int width, int height) { glViewport(0, 0, width, height); });
 
-   float data[] = {
-      // positions         // colors
-       0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // bottom right
-      -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   // bottom left
-       0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // top 
-   };
-
    std::vector<VertexAttribute> triangleVertexAttributes = {
       VertexAttribute(3, GL_FLOAT),
       VertexAttribute(3, GL_FLOAT)
@@ -183,7 +100,7 @@ int main(int argc, char** argv)
    };
 
    std::shared_ptr<Shader> standardShader = std::make_shared<Shader>("standard");
-   std::shared_ptr<GLEntity> glTriangle = std::make_shared<GLEntity>(data, 3, triangleVertexAttributes);
+   std::shared_ptr<GLEntity> glTriangle = std::make_shared<GLEntity>(triangleData, triangleDataSize, triangleVertexAttributes);
    glTriangle->setUpdateLambda([=] () {
       // update the uniform color
       float timeValue = (float) glfwGetTime();
@@ -193,7 +110,7 @@ int main(int argc, char** argv)
       standardShader->setFloat("offset", greenValue);
    });
 
-   std::shared_ptr<GLEntity> glRectangle = std::make_shared<GLEntity>((void*)rectangleVertices, rectangleVerticesLength, rectangleVertexAttributes, (void*)rectangleIndices, rectangleIndicesLength);
+   std::shared_ptr<GLEntity> glRectangle = std::make_shared<GLEntity>((void*)rectangleVertices, rectangleVerticesSize, rectangleVertexAttributes, (void*)rectangleIndices, rectangleIndicesLength);
    glTriangle->setShaderProgram(standardShader);
    std::shared_ptr<GLEntity> entities[] = { glTriangle, glRectangle };
 

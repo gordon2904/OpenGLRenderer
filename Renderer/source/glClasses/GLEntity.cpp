@@ -3,9 +3,9 @@
 #include "../utils/glutils/GLUtils.h"
 #include "../utils/logger/Logger.h"
 
-GLEntity::GLEntity(void* data, unsigned int dataLength, std::vector<VertexAttribute>& vertexAttributes) : GLEntity(data, dataLength, vertexAttributes, nullptr, 0) {}
+GLEntity::GLEntity(void* data, unsigned int dataSize, std::vector<VertexAttribute>& vertexAttributes) : GLEntity(data, dataSize, vertexAttributes, nullptr, 0) {}
 
-GLEntity::GLEntity(void* data, unsigned int _dataLength, std::vector<VertexAttribute>& vertexAttributes, void* elements, unsigned int _elementsLength) : shader(nullptr), ebo(0), mVisible(true), mUpdateLambda([] () {}), vboDataLength(_dataLength), elementsLength(_elementsLength)
+GLEntity::GLEntity(void* data, unsigned int dataSize, std::vector<VertexAttribute>& vertexAttributes, void* elements, unsigned int _elementsLength) : shader(nullptr), ebo(0), mVisible(true), mUpdateLambda([] () {}), vboDataSize(dataSize), elementsLength(_elementsLength)
 {
    glGenVertexArrays(1, &vao);
    glGenBuffers(1, &vbo);
@@ -14,6 +14,7 @@ GLEntity::GLEntity(void* data, unsigned int _dataLength, std::vector<VertexAttri
       glGenBuffers(1, &ebo);
    }
    const unsigned int stride = CalculateVBOStride(vertexAttributes);
+   vboDataLength = vboDataSize / stride;
 
    LOG_INFO("ebo value: {0}", ebo);
 
@@ -26,7 +27,7 @@ GLEntity::GLEntity(void* data, unsigned int _dataLength, std::vector<VertexAttri
    }
 
    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-   glBufferData(GL_ARRAY_BUFFER, stride * vboDataLength, data, GL_STATIC_DRAW);
+   glBufferData(GL_ARRAY_BUFFER, vboDataSize, data, GL_STATIC_DRAW);
 
    unsigned int trackedOffset = 0;
    for(unsigned int i = 0; i < vertexAttributes.size(); ++i)

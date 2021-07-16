@@ -8,6 +8,9 @@ class GLEntity
 {
 protected:
    static const std::unordered_map<unsigned int, unsigned int> typeSizeLookUp;
+   //size in bytes
+   unsigned int vboDataSize;
+   //length in strides
    unsigned int vboDataLength;
    unsigned int elementsLength;
    unsigned int vao;
