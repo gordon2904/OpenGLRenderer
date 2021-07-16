@@ -83,7 +83,7 @@ int GLEntity::useShader(std::shared_ptr<Shader> overrideShader)
    }
    else
    {
-      return 0;
+      return 0; 
    }
    return 1;
 }
