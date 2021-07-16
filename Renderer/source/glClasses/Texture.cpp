@@ -7,7 +7,7 @@
 #include "../utils/logger/Logger.h"
 
 Texture::Texture(const char* fileName, const char* assetPath)
-{ 
+{
    //create path string
    std::stringstream pathStringStream;
    pathStringStream << assetPath << fileName;
