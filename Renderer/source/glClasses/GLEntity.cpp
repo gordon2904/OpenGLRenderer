@@ -34,10 +34,12 @@ GLEntity::GLEntity(void* data, unsigned int dataSize, std::vector<VertexAttribut
    {
       const VertexAttribute vertexAttribute = vertexAttributes[i];
       GLintptr offset = trackedOffset;
+      LOG_INFO("glVertexAttribPointer({0}, {1}, {2}, GL_FALSE, {3}, (void*){4}", i, vertexAttribute.size, vertexAttribute.type, stride, offset);
       glVertexAttribPointer(i, vertexAttribute.size, vertexAttribute.type, GL_FALSE, stride, (void*)offset);
       glEnableVertexAttribArray(i);
       trackedOffset += typeSizeLookUp.at(vertexAttribute.type) * vertexAttribute.size;
    }
+   LOG_INFO("vbo Data Length: {0}", vboDataLength);
 }
 
 const std::unordered_map<unsigned int, unsigned int> GLEntity::typeSizeLookUp{
@@ -69,13 +71,8 @@ GLEntity::~GLEntity()
    glDeleteBuffers(1, &vbo);
 }
 
-int GLEntity::Render(std::shared_ptr<Shader> overrideShader)
+int GLEntity::useShader(std::shared_ptr<Shader> overrideShader)
 {
-   if(!mVisible)
-   {
-      return 0;
-   }
-   mUpdateLambda();
    if(overrideShader != nullptr)
    {
       overrideShader->use();
@@ -88,6 +85,24 @@ int GLEntity::Render(std::shared_ptr<Shader> overrideShader)
    {
       return 0;
    }
+   return 1;
+}
+
+int GLEntity::Render(std::shared_ptr<Shader> overrideShader)
+{
+   if(!mVisible)
+   {
+      return 0;
+   }
+   if(texture != nullptr)
+   {
+      texture->use();
+   }
+   if(!useShader(overrideShader))
+   {
+      return 0;
+   }
+   mUpdateLambda();
    glBindVertexArray(vao);
    Draw();
    return 1;
@@ -111,7 +126,6 @@ void GLEntity::setVisible(const bool& visible)
    mVisible = visible;
 }
 
-
 void GLEntity::setShaderProgram(std::shared_ptr<Shader> _shader)
 {
    shader = _shader;
@@ -122,6 +136,15 @@ std::shared_ptr<Shader> GLEntity::getShaderProgram()
    return shader;
 }
 
+void GLEntity::setTexture(std::shared_ptr<Texture> _texture)
+{
+   texture = _texture;
+}
+
+std::shared_ptr<Texture> GLEntity::getTexture()
+{
+   return texture;
+}
 
 void GLEntity::setUpdateLambda(std::function<void()> updateLambda)
 {

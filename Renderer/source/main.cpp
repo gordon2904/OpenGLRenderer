@@ -11,33 +11,27 @@
 #include<GLFW/glfw3.h>
 
 #include"glClasses/GLEntity.h"
+#include"glClasses/Texture.h"
 #include"glClasses/Shader.h"
 
 GLFWwindow* window = nullptr;
 const unsigned int INITIAL_SCREEN_WIDTH = 800;
 const unsigned int INITIAL_SCREEN_HEIGHT = 600;
 
+float rectangleData[] = {
+    // positions          // colors           // texture coords
+     0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
+     0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
+    -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
+    -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
+};
+const unsigned int rectangleDataSize = sizeof(rectangleData);
 
-float triangleData[] = {
-   // positions         // colors
-    0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // bottom right
-   -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   // bottom left
-    0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // top 
+unsigned int rectangleIndices[] = {
+    0, 1, 3, // first triangle
+    1, 2, 3  // second triangle
 };
-const unsigned int triangleDataSize = sizeof(triangleData);
-
-const float rectangleVertices[] = {
-  0.5f,  0.5f, 0.0f,  // top right
-  0.5f, -0.5f, 0.0f,  // bottom right
- -0.5f, -0.5f, 0.0f,  // bottom left
- -0.5f,  0.5f, 0.0f   // top left 
-};
-const unsigned int rectangleVerticesSize = sizeof(rectangleVertices);
-const unsigned int rectangleIndices[] = {
- 0, 1, 3,   // first triangle
- 1, 2, 3    // second triangle
-};
-const unsigned int rectangleIndicesLength = sizeof(rectangleIndices) / sizeof(unsigned int);
+unsigned int rectangleIndicesLength = sizeof(rectangleIndices) / sizeof(unsigned int);
 
 int initializeGLFWwindow()
 {
@@ -90,29 +84,26 @@ int main(int argc, char** argv)
    glViewport(0, 0, 800, 600);
    glfwSetFramebufferSizeCallback(window, [] (GLFWwindow* window, int width, int height) { glViewport(0, 0, width, height); });
 
-   std::vector<VertexAttribute> triangleVertexAttributes = {
-      VertexAttribute(3, GL_FLOAT),
-      VertexAttribute(3, GL_FLOAT)
-   };
-
    std::vector<VertexAttribute> rectangleVertexAttributes = {
-      VertexAttribute(3, GL_FLOAT)
+      VertexAttribute(3, GL_FLOAT), // position
+      VertexAttribute(3, GL_FLOAT), // vertex colour
+      VertexAttribute(2, GL_FLOAT)  // tex coord
    };
 
+   std::shared_ptr<Texture> wallTexture = std::make_shared<Texture>("wall.jpg");
    std::shared_ptr<Shader> standardShader = std::make_shared<Shader>("standard");
-   std::shared_ptr<GLEntity> glTriangle = std::make_shared<GLEntity>(triangleData, triangleDataSize, triangleVertexAttributes);
-   glTriangle->setUpdateLambda([=] () {
-      // update the uniform color
-      float timeValue = (float) glfwGetTime();
-      float greenValue = sin(timeValue) / 2.0f + 0.5f;
-      float vec4[] = { 0, greenValue, 0, 1 };
-      standardShader->setVec4("ourColor", vec4);
-      standardShader->setFloat("offset", greenValue);
-   });
-
-   std::shared_ptr<GLEntity> glRectangle = std::make_shared<GLEntity>((void*)rectangleVertices, rectangleVerticesSize, rectangleVertexAttributes, (void*)rectangleIndices, rectangleIndicesLength);
+   std::shared_ptr<GLEntity> glTriangle = std::make_shared<GLEntity>(rectangleData, rectangleDataSize, rectangleVertexAttributes, rectangleIndices, rectangleIndicesLength);
+   //glTriangle->setUpdateLambda([=] () {
+   //   // update the uniform color
+   //   float timeValue = (float) glfwGetTime();
+   //   float greenValue = sin(timeValue) / 2.0f + 0.5f;
+   //   float vec4[] = { 0, greenValue, 0, 1 };
+   //   standardShader->setVec4("ourColor", vec4);
+   //   standardShader->setFloat("offset", greenValue);
+   //});
+   glTriangle->setTexture(wallTexture);   
    glTriangle->setShaderProgram(standardShader);
-   std::shared_ptr<GLEntity> entities[] = { glTriangle, glRectangle };
+   std::shared_ptr<GLEntity> entities[] = { glTriangle };
 
    while(!glfwWindowShouldClose(window))
    {
