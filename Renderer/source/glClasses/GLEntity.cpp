@@ -5,7 +5,7 @@
 
 GLEntity::GLEntity(void* data, unsigned int dataSize, std::vector<VertexAttribute>& vertexAttributes) : GLEntity(data, dataSize, vertexAttributes, nullptr, 0) {}
 
-GLEntity::GLEntity(void* data, unsigned int dataSize, std::vector<VertexAttribute>& vertexAttributes, void* elements, unsigned int _elementsLength) : shader(nullptr), ebo(0), mVisible(true), mUpdateLambda([] () {}), vboDataSize(dataSize), elementsLength(_elementsLength)
+GLEntity::GLEntity(void* data, unsigned int dataSize, std::vector<VertexAttribute>& vertexAttributes, void* elements, unsigned int _elementsLength) : mMaterial(nullptr), ebo(0), mVisible(true), mUpdateLambda([] () {}), vboDataSize(dataSize), elementsLength(_elementsLength)
 {
    glGenVertexArrays(1, &vao);
    glGenBuffers(1, &vbo);
@@ -15,8 +15,6 @@ GLEntity::GLEntity(void* data, unsigned int dataSize, std::vector<VertexAttribut
    }
    const unsigned int stride = CalculateVBOStride(vertexAttributes);
    vboDataLength = vboDataSize / stride;
-
-   LOG_INFO("ebo value: {0}", ebo);
 
    glBindVertexArray(vao);
 
@@ -34,12 +32,10 @@ GLEntity::GLEntity(void* data, unsigned int dataSize, std::vector<VertexAttribut
    {
       const VertexAttribute vertexAttribute = vertexAttributes[i];
       GLintptr offset = trackedOffset;
-      LOG_INFO("glVertexAttribPointer({0}, {1}, {2}, GL_FALSE, {3}, (void*){4}", i, vertexAttribute.size, vertexAttribute.type, stride, offset);
       glVertexAttribPointer(i, vertexAttribute.size, vertexAttribute.type, GL_FALSE, stride, (void*)offset);
       glEnableVertexAttribArray(i);
       trackedOffset += typeSizeLookUp.at(vertexAttribute.type) * vertexAttribute.size;
    }
-   LOG_INFO("vbo Data Length: {0}", vboDataLength);
 }
 
 const std::unordered_map<unsigned int, unsigned int> GLEntity::typeSizeLookUp{
@@ -66,20 +62,20 @@ unsigned int GLEntity::CalculateVBOStride(const std::vector<VertexAttribute>& ve
 
 GLEntity::~GLEntity()
 {
-   LOG_INFO("deleting\nvao: {0}\nvbo: {1}", vao, vbo);
+   LOG_INFO("deleting GLEntity\nvao: {0}\nvbo: {1}", vao, vbo);
    glDeleteVertexArrays(1, &vao);
    glDeleteBuffers(1, &vbo);
 }
 
-int GLEntity::useShader(std::shared_ptr<Shader> overrideShader)
+int GLEntity::useMaterial(std::shared_ptr<Material> overrideMaterial)
 {
-   if(overrideShader != nullptr)
+   if(overrideMaterial != nullptr)
    {
-      overrideShader->use();
+      overrideMaterial->use();
    }
-   else if(shader != nullptr)
+   else if(mMaterial != nullptr)
    {
-      shader->use();
+      mMaterial->use();
    }
    else
    {
@@ -88,17 +84,13 @@ int GLEntity::useShader(std::shared_ptr<Shader> overrideShader)
    return 1;
 }
 
-int GLEntity::Render(std::shared_ptr<Shader> overrideShader)
+int GLEntity::Render(std::shared_ptr<Material> overrideMaterial)
 {
    if(!mVisible)
    {
       return 0;
    }
-   if(texture != nullptr)
-   {
-      texture->use();
-   }
-   if(!useShader(overrideShader))
+   if(!useMaterial(overrideMaterial))
    {
       return 0;
    }
@@ -126,25 +118,11 @@ void GLEntity::setVisible(const bool& visible)
    mVisible = visible;
 }
 
-void GLEntity::setShaderProgram(std::shared_ptr<Shader> _shader)
+void GLEntity::setMaterial(std::shared_ptr<Material> material)
 {
-   shader = _shader;
+   mMaterial = material;
 }
 
-std::shared_ptr<Shader> GLEntity::getShaderProgram()
-{
-   return shader;
-}
-
-void GLEntity::setTexture(std::shared_ptr<Texture> _texture)
-{
-   texture = _texture;
-}
-
-std::shared_ptr<Texture> GLEntity::getTexture()
-{
-   return texture;
-}
 
 void GLEntity::setUpdateLambda(std::function<void()> updateLambda)
 {

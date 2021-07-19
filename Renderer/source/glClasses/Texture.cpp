@@ -6,7 +6,7 @@
 #include <sstream>
 #include "../utils/logger/Logger.h"
 
-Texture::Texture(const char* fileName, const char* assetPath)
+Texture::Texture(const char* fileName, const GLPixelDataFormat format, const bool flip, const char* assetPath)
 { 
    //create path string
    std::stringstream pathStringStream;
@@ -28,10 +28,11 @@ Texture::Texture(const char* fileName, const char* assetPath)
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
    int width, height, channelCount;
+   stbi_set_flip_vertically_on_load(flip);
    unsigned char* textureData = stbi_load(pathString.c_str(), &width, &height, &channelCount, 0);
    if(textureData)
    {
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, textureData);
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, format, GL_UNSIGNED_BYTE, textureData);
       glGenerateMipmap(GL_TEXTURE_2D);
    }
    else

@@ -11,8 +11,13 @@
 #include<GLFW/glfw3.h>
 
 #include"glClasses/GLEntity.h"
+#include"glClasses/Material.h"
 #include"glClasses/Texture.h"
 #include"glClasses/Shader.h"
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 GLFWwindow* window = nullptr;
 const unsigned int INITIAL_SCREEN_WIDTH = 800;
@@ -90,19 +95,27 @@ int main(int argc, char** argv)
       VertexAttribute(2, GL_FLOAT)  // tex coord
    };
 
-   std::shared_ptr<Texture> wallTexture = std::make_shared<Texture>("wall.jpg");
+   std::shared_ptr<Texture> wallTexture = std::make_shared<Texture>("wall.jpg", GLPixelDataFormat::RGB);
+   std::shared_ptr<Texture> faceTexture = std::make_shared<Texture>("awesomeface.png", GLPixelDataFormat::RGBA, true);
    std::shared_ptr<Shader> standardShader = std::make_shared<Shader>("standard");
+   std::shared_ptr<Material> standardMaterial = std::make_shared<Material>(standardShader);
+   standardMaterial->setTexture("texture1", wallTexture, GL_TEXTURE0);
+   standardMaterial->setTexture("texture2", faceTexture, GL_TEXTURE0+1);
    std::shared_ptr<GLEntity> glTriangle = std::make_shared<GLEntity>(rectangleData, rectangleDataSize, rectangleVertexAttributes, rectangleIndices, rectangleIndicesLength);
-   //glTriangle->setUpdateLambda([=] () {
-   //   // update the uniform color
-   //   float timeValue = (float) glfwGetTime();
-   //   float greenValue = sin(timeValue) / 2.0f + 0.5f;
-   //   float vec4[] = { 0, greenValue, 0, 1 };
-   //   standardShader->setVec4("ourColor", vec4);
-   //   standardShader->setFloat("offset", greenValue);
-   //});
-   glTriangle->setTexture(wallTexture);   
-   glTriangle->setShaderProgram(standardShader);
+   glTriangle->setMaterial(standardMaterial);
+   glTriangle->setUpdateLambda([=] () {
+      glm::vec4 vec(1.0f, 0.0f, 0.0f, 1.0f);
+
+      glm::mat4 trans = glm::mat4(1.0f);
+      // update the uniform color
+      float timeValue = (float)glfwGetTime();
+      float sinTime = sin(timeValue);
+      trans = glm::translate(trans, glm::vec3(0.5, -0.5, 0.0));
+      trans = glm::rotate(trans, glm::radians(90.0f * timeValue), glm::vec3(0.0, 0.0, 1.0));
+
+
+      standardMaterial->setMat4("transform", trans);
+   });
    std::shared_ptr<GLEntity> entities[] = { glTriangle };
 
    while(!glfwWindowShouldClose(window))

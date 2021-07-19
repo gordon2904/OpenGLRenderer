@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="source\glClasses\Material.cpp" />
     <ClCompile Include="source\glClasses\Shader.cpp" />
     <ClCompile Include="source\glClasses\GLEntity.cpp" />
     <ClCompile Include="source\utils\logger\Logger.cpp" />
@@ -31,6 +32,7 @@
     <None Include="bin\x86\freeglut.dll" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="source\glClasses\Material.h" />
     <ClInclude Include="source\glClasses\Shader.h" />
     <ClInclude Include="source\glClasses\GLEntity.h" />
     <ClInclude Include="source\utils\glutils\GLUtils.h" />

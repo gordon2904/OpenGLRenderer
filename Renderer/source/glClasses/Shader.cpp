@@ -1,7 +1,9 @@
 #include "Shader.h"
+#include <glad/glad.h>
+#include <sstream>
+#include <fstream>
 #include "../utils/logger/Logger.h"
 #include <string>
-#include <iostream>
 
 int createShader(GLuint& shaderId, GLuint shaderType, const char* shaderCode, char logInfo[512], int &success)
 {
@@ -93,7 +95,7 @@ Shader::Shader(const char* shaderName): programId(0)
 
 Shader::~Shader()
 {
-   LOG_INFO("deleting shader");
+   LOG_INFO("deleting Shader\nprogramId:{0}", programId);
    glDeleteProgram(programId);
 }
 
@@ -102,30 +104,8 @@ void Shader::use() const
    glUseProgram(programId);
 }
 
-void Shader::setBool(const std::string& name, bool value) const
-{
-   glUniform1i(glGetUniformLocation(programId, name.c_str()), (int)value);
-}
 
-void Shader::setInt(const std::string& name, int value) const
+const unsigned int Shader::getProgramId()
 {
-   glUniform1i(glGetUniformLocation(programId, name.c_str()), value);
-}
-
-void Shader::setFloat(const std::string& name, float value) const
-{
-   glUniform1f(glGetUniformLocation(programId, name.c_str()), value);
-}
-
-void Shader::setVec2(const std::string& name, float values[2]) const
-{
-   glUniform2f(glGetUniformLocation(programId, name.c_str()), values[0], values[1]);
-}
-void Shader::setVec3(const std::string& name, float values[3]) const
-{
-   glUniform3f(glGetUniformLocation(programId, name.c_str()), values[0], values[1], values[2]);
-}
-void Shader::setVec4(const std::string& name, float values[4]) const
-{
-   glUniform4f(glGetUniformLocation(programId, name.c_str()), values[0], values[1], values[2], values[3]);
+   return programId;
 }
