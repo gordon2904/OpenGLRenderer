@@ -1,5 +1,6 @@
 #include "Material.h"
 #include "../utils/logger/Logger.h"
+#include <glm/gtc/type_ptr.hpp>
 
 const int minTextureUnit = 0;
 const int maxTextureUnit = GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS - GL_TEXTURE0;
@@ -71,4 +72,9 @@ void Material::setVec3(const std::string& name, float values[3]) const
 void Material::setVec4(const std::string& name, float values[4]) const
 {
    glUniform4f(glGetUniformLocation(mShader->getProgramId(), name.c_str()), values[0], values[1], values[2], values[3]);
+}
+
+void Material::setMat4(const std::string& name, const glm::mat4& transform) const
+{
+   glUniformMatrix4fv(glGetUniformLocation(mShader->getProgramId(), name.c_str()), 1, GL_FALSE, glm::value_ptr(transform));
 }

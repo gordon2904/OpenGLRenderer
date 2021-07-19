@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include "Shader.h"
 #include "Texture.h"
+#include <glm/glm.hpp>
 
 
 
@@ -27,5 +28,6 @@ public:
    void setVec2(const std::string& name, float values[2]) const;
    void setVec3(const std::string& name, float values[3]) const;
    void setVec4(const std::string& name, float values[4]) const;
+   void setMat4(const std::string& name, const glm::mat4 &transform) const;
 };
 
