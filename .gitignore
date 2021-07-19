@@ -336,3 +336,4 @@ ASALocalRun/
 # Don't want to ignore .obj files in assets
 !Renderer/assets/*.obj
 !Renderer/assets/**/*.obj
+!Renderer/lib/x64
