@@ -48,6 +48,9 @@
     <ClCompile Include="source\glClasses\Texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\glClasses\Material.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="bin\x64\freeglut.dll">
@@ -71,6 +74,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\glClasses\Texture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\glClasses\Material.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

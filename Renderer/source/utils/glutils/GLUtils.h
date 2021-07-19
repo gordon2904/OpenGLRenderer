@@ -11,6 +11,25 @@ enum GLShaderType
    //COMPUTE_SHADER = GL_COMPUTE_SHADER                  - Only available in GL >= 4.3
 };
 
+enum GLPixelDataFormat
+{
+   RED = GL_RED, 
+   RG = GL_RG, 
+   RGB = GL_RGB, 
+   BGR = GL_BGR, 
+   RGBA = GL_RGBA, 
+   BRGA = GL_BGRA, 
+   RED_INTEGER = GL_RED_INTEGER,
+   RG_INTEGER = GL_RG_INTEGER,
+   RGB_INTEGER = GL_RGB_INTEGER,
+   BGR_INTEGER = GL_BGR_INTEGER,
+   RGBA_INTEGER = GL_RGBA_INTEGER,
+   BGRA_INTEGER = GL_BGRA_INTEGER,
+   STENCIL_INDEX = GL_STENCIL_INDEX,
+   DEPTH_COMPONENT = GL_DEPTH_COMPONENT,
+   DEPTH_STENCIL = GL_DEPTH_STENCIL
+};
+
 struct VertexAttribute
 {
    VertexAttribute(unsigned int _size, unsigned int _type) : size(_size), type(_type) {}

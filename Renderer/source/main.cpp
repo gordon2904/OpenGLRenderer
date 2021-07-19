@@ -11,6 +11,7 @@
 #include<GLFW/glfw3.h>
 
 #include"glClasses/GLEntity.h"
+#include"glClasses/Material.h"
 #include"glClasses/Texture.h"
 #include"glClasses/Shader.h"
 
@@ -90,19 +91,22 @@ int main(int argc, char** argv)
       VertexAttribute(2, GL_FLOAT)  // tex coord
    };
 
-   std::shared_ptr<Texture> wallTexture = std::make_shared<Texture>("wall.jpg");
+   std::shared_ptr<Texture> wallTexture = std::make_shared<Texture>("wall.jpg", GLPixelDataFormat::RGB);
+   std::shared_ptr<Texture> faceTexture = std::make_shared<Texture>("awesomeface.png", GLPixelDataFormat::RGBA, true);
    std::shared_ptr<Shader> standardShader = std::make_shared<Shader>("standard");
+   std::shared_ptr<Material> standardMaterial = std::make_shared<Material>(standardShader);
+   standardMaterial->setTexture("texture1", wallTexture, GL_TEXTURE0);
+   standardMaterial->setTexture("texture2", faceTexture, GL_TEXTURE0+1);
    std::shared_ptr<GLEntity> glTriangle = std::make_shared<GLEntity>(rectangleData, rectangleDataSize, rectangleVertexAttributes, rectangleIndices, rectangleIndicesLength);
+   glTriangle->setMaterial(standardMaterial);
    //glTriangle->setUpdateLambda([=] () {
    //   // update the uniform color
    //   float timeValue = (float) glfwGetTime();
    //   float greenValue = sin(timeValue) / 2.0f + 0.5f;
    //   float vec4[] = { 0, greenValue, 0, 1 };
-   //   standardShader->setVec4("ourColor", vec4);
-   //   standardShader->setFloat("offset", greenValue);
+   //   standardMaterial->setVec4("ourColor", vec4);
+   //   standardMaterial->setFloat("offset", greenValue);
    //});
-   glTriangle->setTexture(wallTexture);   
-   glTriangle->setShaderProgram(standardShader);
    std::shared_ptr<GLEntity> entities[] = { glTriangle };
 
    while(!glfwWindowShouldClose(window))
