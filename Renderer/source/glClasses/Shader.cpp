@@ -95,7 +95,7 @@ Shader::Shader(const char* shaderName): programId(0)
 
 Shader::~Shader()
 {
-   LOG_INFO("deleting shader");
+   LOG_INFO("deleting Shader\nprogramId:{0}", programId);
    glDeleteProgram(programId);
 }
 

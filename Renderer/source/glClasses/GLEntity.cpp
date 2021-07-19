@@ -16,8 +16,6 @@ GLEntity::GLEntity(void* data, unsigned int dataSize, std::vector<VertexAttribut
    const unsigned int stride = CalculateVBOStride(vertexAttributes);
    vboDataLength = vboDataSize / stride;
 
-   LOG_INFO("ebo value: {0}", ebo);
-
    glBindVertexArray(vao);
 
    if(elements != nullptr)
@@ -34,12 +32,10 @@ GLEntity::GLEntity(void* data, unsigned int dataSize, std::vector<VertexAttribut
    {
       const VertexAttribute vertexAttribute = vertexAttributes[i];
       GLintptr offset = trackedOffset;
-      LOG_INFO("glVertexAttribPointer({0}, {1}, {2}, GL_FALSE, {3}, (void*){4}", i, vertexAttribute.size, vertexAttribute.type, stride, offset);
       glVertexAttribPointer(i, vertexAttribute.size, vertexAttribute.type, GL_FALSE, stride, (void*)offset);
       glEnableVertexAttribArray(i);
       trackedOffset += typeSizeLookUp.at(vertexAttribute.type) * vertexAttribute.size;
    }
-   LOG_INFO("vbo Data Length: {0}", vboDataLength);
 }
 
 const std::unordered_map<unsigned int, unsigned int> GLEntity::typeSizeLookUp{
@@ -66,7 +62,7 @@ unsigned int GLEntity::CalculateVBOStride(const std::vector<VertexAttribute>& ve
 
 GLEntity::~GLEntity()
 {
-   LOG_INFO("deleting\nvao: {0}\nvbo: {1}", vao, vbo);
+   LOG_INFO("deleting GLEntity\nvao: {0}\nvbo: {1}", vao, vbo);
    glDeleteVertexArrays(1, &vao);
    glDeleteBuffers(1, &vbo);
 }
