@@ -23,6 +23,13 @@ GLFWwindow* window = nullptr;
 const unsigned int INITIAL_SCREEN_WIDTH = 800;
 const unsigned int INITIAL_SCREEN_HEIGHT = 600;
 
+const float NEAR_PLANE = 0.1f;
+const float FAR_PLANE = 100.0f;
+const float FOV = 45.0f;
+
+glm::mat4 orthographicProjection = glm::ortho(0.0f, (float)INITIAL_SCREEN_WIDTH, 0.0f, (float)INITIAL_SCREEN_HEIGHT, 0.1f, 100.f);
+glm::mat4 perspectiveProjection = glm::perspective(glm::radians(FOV), (float)INITIAL_SCREEN_WIDTH / (float)INITIAL_SCREEN_HEIGHT, NEAR_PLANE, FAR_PLANE);
+
 float rectangleData[] = {
     // positions          // colors           // texture coords
      0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
@@ -87,7 +94,18 @@ int main(int argc, char** argv)
    }
 
    glViewport(0, 0, 800, 600);
-   glfwSetFramebufferSizeCallback(window, [] (GLFWwindow* window, int width, int height) { glViewport(0, 0, width, height); });
+   glfwSetFramebufferSizeCallback(window, [] (GLFWwindow* window, int width, int height) { 
+      orthographicProjection = glm::ortho(0.0f, (float)width, 0.0f, (float)height, 0.1f, 100.f);
+      perspectiveProjection = glm::perspective(glm::radians(FOV), (float)width / (float)height, NEAR_PLANE, FAR_PLANE);
+      glViewport(0, 0, width, height); 
+      });
+
+   glm::mat4 model = glm::mat4(1.0f);
+   model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+   glm::mat4 view = glm::mat4(1.0f);
+   // note that we're translating the scene in the reverse direction of where we want to move
+   view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
 
    std::vector<VertexAttribute> rectangleVertexAttributes = {
       VertexAttribute(3, GL_FLOAT), // position
@@ -104,17 +122,10 @@ int main(int argc, char** argv)
    std::shared_ptr<GLEntity> glTriangle = std::make_shared<GLEntity>(rectangleData, rectangleDataSize, rectangleVertexAttributes, rectangleIndices, rectangleIndicesLength);
    glTriangle->setMaterial(standardMaterial);
    glTriangle->setUpdateLambda([=] () {
-      glm::vec4 vec(1.0f, 0.0f, 0.0f, 1.0f);
-
-      glm::mat4 trans = glm::mat4(1.0f);
-      // update the uniform color
       float timeValue = (float)glfwGetTime();
-      float sinTime = sin(timeValue);
-      trans = glm::translate(trans, glm::vec3(0.5, -0.5, 0.0));
-      trans = glm::rotate(trans, glm::radians(90.0f * timeValue), glm::vec3(0.0, 0.0, 1.0));
-
-
-      standardMaterial->setMat4("transform", trans);
+      standardMaterial->setMat4("model", model);
+      standardMaterial->setMat4("view", view);
+      standardMaterial->setMat4("projection", perspectiveProjection);
    });
    std::shared_ptr<GLEntity> entities[] = { glTriangle };
 
