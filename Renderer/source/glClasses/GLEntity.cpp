@@ -3,9 +3,24 @@
 #include "../utils/glutils/GLUtils.h"
 #include "../utils/logger/Logger.h"
 
+//static members
+const std::function<void(std::shared_ptr<Material>, const float&)> GLEntity::defaultUpdateLambda = [] (std::shared_ptr<Material>, const float&) {};
+
+const std::unordered_map<unsigned int, unsigned int> GLEntity::typeSizeLookUp{
+   { GL_BYTE, sizeof(GLbyte) },
+   { GL_UNSIGNED_BYTE, sizeof(GLubyte) },
+   { GL_SHORT, sizeof(GLshort) },
+   { GL_UNSIGNED_SHORT, sizeof(GLushort) },
+   { GL_INT, sizeof(GLint) },
+   { GL_UNSIGNED_INT, sizeof(GLuint) },
+   { GL_HALF_FLOAT, sizeof(GLhalf) },
+   { GL_FLOAT, sizeof(GLfloat) },
+   { GL_DOUBLE, sizeof(GLdouble) }
+};
+
 GLEntity::GLEntity(void* data, unsigned int dataSize, std::vector<VertexAttribute>& vertexAttributes) : GLEntity(data, dataSize, vertexAttributes, nullptr, 0) {}
 
-GLEntity::GLEntity(void* data, unsigned int dataSize, std::vector<VertexAttribute>& vertexAttributes, void* elements, unsigned int _elementsLength) : mMaterial(nullptr), ebo(0), mVisible(true), mUpdateLambda([] () {}), vboDataSize(dataSize), elementsLength(_elementsLength)
+GLEntity::GLEntity(void* data, unsigned int dataSize, std::vector<VertexAttribute>& vertexAttributes, void* elements, unsigned int _elementsLength) : mMaterial(nullptr), ebo(0), mVisible(true), mUpdateLambda(defaultUpdateLambda), vboDataSize(dataSize), elementsLength(_elementsLength)
 {
    glGenVertexArrays(1, &vao);
    glGenBuffers(1, &vbo);
@@ -38,18 +53,6 @@ GLEntity::GLEntity(void* data, unsigned int dataSize, std::vector<VertexAttribut
    }
 }
 
-const std::unordered_map<unsigned int, unsigned int> GLEntity::typeSizeLookUp{
-   { GL_BYTE, sizeof(GLbyte) },
-   { GL_UNSIGNED_BYTE, sizeof(GLubyte) },
-   { GL_SHORT, sizeof(GLshort) },
-   { GL_UNSIGNED_SHORT, sizeof(GLushort) },
-   { GL_INT, sizeof(GLint) },
-   { GL_UNSIGNED_INT, sizeof(GLuint) },
-   { GL_HALF_FLOAT, sizeof(GLhalf) },
-   { GL_FLOAT, sizeof(GLfloat) },
-   { GL_DOUBLE, sizeof(GLdouble) }
-};
-
 unsigned int GLEntity::CalculateVBOStride(const std::vector<VertexAttribute>& vertexAttributes)
 {
    unsigned int stride = 0;
@@ -67,15 +70,17 @@ GLEntity::~GLEntity()
    glDeleteBuffers(1, &vbo);
 }
 
-int GLEntity::useMaterial(std::shared_ptr<Material> overrideMaterial)
+int GLEntity::useMaterial(const float &time, std::shared_ptr<Material> overrideMaterial)
 {
    if(overrideMaterial != nullptr)
    {
       overrideMaterial->use();
+      mUpdateLambda(overrideMaterial, time);
    }
    else if(mMaterial != nullptr)
    {
       mMaterial->use();
+      mUpdateLambda(mMaterial, time);
    }
    else
    {
@@ -84,22 +89,20 @@ int GLEntity::useMaterial(std::shared_ptr<Material> overrideMaterial)
    return 1;
 }
 
-int GLEntity::Render(std::shared_ptr<Material> overrideMaterial)
+int GLEntity::Render(const float &time, std::shared_ptr<Material> overrideMaterial)
 {
    if(!mVisible)
    {
       return 0;
    }
-   if(!useMaterial(overrideMaterial))
+   if(!useMaterial(time, overrideMaterial))
    {
       return 0;
    }
-   mUpdateLambda();
    glBindVertexArray(vao);
    Draw();
    return 1;
 }
-
 
 void GLEntity::Draw()
 {
@@ -124,7 +127,7 @@ void GLEntity::setMaterial(std::shared_ptr<Material> material)
 }
 
 
-void GLEntity::setUpdateLambda(std::function<void()> updateLambda)
+void GLEntity::setUpdateLambda(std::function<void(std::shared_ptr<Material>, const float&)> updateLambda)
 {
    mUpdateLambda = updateLambda;
 }
