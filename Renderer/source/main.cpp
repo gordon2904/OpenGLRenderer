@@ -11,6 +11,7 @@
 #include<GLFW/glfw3.h>
 
 #include"glClasses/GLEntity.h"
+#include"glClasses/GLMultiEntity.h"
 #include"glClasses/Material.h"
 #include"glClasses/Texture.h"
 #include"glClasses/Shader.h"
@@ -29,6 +30,19 @@ const float FOV = 45.0f;
 
 glm::mat4 orthographicProjection = glm::ortho(0.0f, (float)INITIAL_SCREEN_WIDTH, 0.0f, (float)INITIAL_SCREEN_HEIGHT, 0.1f, 100.f);
 glm::mat4 perspectiveProjection = glm::perspective(glm::radians(FOV), (float)INITIAL_SCREEN_WIDTH / (float)INITIAL_SCREEN_HEIGHT, NEAR_PLANE, FAR_PLANE);
+
+glm::vec3 cubePositions[] = {
+    glm::vec3(0.0f,  0.0f,  0.0f),
+    glm::vec3(2.0f,  5.0f, -15.0f),
+    glm::vec3(-1.5f, -2.2f, -2.5f),
+    glm::vec3(-3.8f, -2.0f, -12.3f),
+    glm::vec3(2.4f, -0.4f, -3.5f),
+    glm::vec3(-1.7f,  3.0f, -7.5f),
+    glm::vec3(1.3f, -2.0f, -2.5f),
+    glm::vec3(1.5f,  2.0f, -2.5f),
+    glm::vec3(1.5f,  0.2f, -1.5f),
+    glm::vec3(-1.3f,  1.0f, -1.5f)
+};
 
 float cubeVertices[] = {
     -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -146,7 +160,6 @@ int main(int argc, char** argv)
       });
 
    glm::mat4 model = glm::mat4(1.0f);
-   model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
    glm::mat4 view = glm::mat4(1.0f);
    // note that we're translating the scene in the reverse direction of where we want to move
@@ -179,21 +192,45 @@ int main(int argc, char** argv)
    cubeMaterial->setTexture("texture2", faceTexture, GL_TEXTURE0 + 1);
 
    //update lambda to be used across rectangle and cube
-   std::function<void(std::shared_ptr<Material>, const float&)> updateLambda = [&](std::shared_ptr<Material> material, const float& time) {
-      glm::mat4 model = glm::mat4(1.0f);
-      model = glm::rotate(model, glm::radians(time * -55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-      material->setMat4("model", model);
+   std::function<void(glm::mat4&, std::shared_ptr<Material>, const float&)> updateLambda = [&](glm::mat4& localPos, std::shared_ptr<Material> material, const float& time) {
+      localPos = glm::rotate(localPos, glm::radians(time * -55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+      material->setMat4("model", localPos);
       material->setMat4("view", view);
       material->setMat4("projection", perspectiveProjection);
+   };
+
+   //update lambda to be used across GLMultiEntity
+   std::function<void(glm::mat4&, std::shared_ptr<Material>, const float&, unsigned int)> updateMultiLambda = [&] (glm::mat4& localPos, std::shared_ptr<Material> material, const float& time, unsigned int index) {
+      if(index == 0)
+      {
+         material->setMat4("view", view);
+         material->setMat4("projection", perspectiveProjection);
+      }
+      glm::mat4 model = glm::mat4(1.0f);
+      model = glm::translate(model, cubePositions[index]);
+      float angle = 20.0f * index;
+      model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+      material->setMat4("model", model);
+
+      
+      //localPos = glm::rotate(localPos, glm::radians(time * -55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+      //material->setMat4("model", localPos);
+
    };
 
    std::shared_ptr<GLEntity> glCube = std::make_shared<GLEntity>(cubeVertices, cubeDataSize, cubeVertexAttributes); 
    glCube->setMaterial(cubeMaterial);
    glCube->setUpdateLambda(updateLambda);
+
+   std::shared_ptr<GLMultiEntity> glMultiCube = std::make_shared<GLMultiEntity>(cubeVertices, cubeDataSize, cubeVertexAttributes);
+   glMultiCube->setModelCount(10);
+   glMultiCube->setMaterial(cubeMaterial);
+   glMultiCube->setUpdateLambda(updateMultiLambda);
+
    std::shared_ptr<GLEntity> glRectangle = std::make_shared<GLEntity>(rectangleData, rectangleDataSize, rectangleVertexAttributes, rectangleIndices, rectangleIndicesLength);
    glRectangle->setMaterial(standardMaterial);
    glRectangle->setUpdateLambda(updateLambda);
-   std::shared_ptr<GLEntity> entities[] = { glCube };
+   std::shared_ptr<GLDrawable> entities[] = { glMultiCube };
 
    while(!glfwWindowShouldClose(window))
    {
