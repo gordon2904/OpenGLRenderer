@@ -15,21 +15,39 @@
 #include"glClasses/Material.h"
 #include"glClasses/Texture.h"
 #include"glClasses/Shader.h"
+#include"glClasses/Camera.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-GLFWwindow* window = nullptr;
-const unsigned int INITIAL_SCREEN_WIDTH = 800;
-const unsigned int INITIAL_SCREEN_HEIGHT = 600;
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void processInput(GLFWwindow* window); 
+int initializeGLFWwindow();
+int initializeGLAD();
 
+GLFWwindow* window = nullptr;
+
+//rendering shindig
 const float NEAR_PLANE = 0.1f;
 const float FAR_PLANE = 100.0f;
-const float FOV = 45.0f;
+unsigned int SCREEN_WIDTH = 800;
+unsigned int SCREEN_HEIGHT = 600;
 
-glm::mat4 orthographicProjection = glm::ortho(0.0f, (float)INITIAL_SCREEN_WIDTH, 0.0f, (float)INITIAL_SCREEN_HEIGHT, 0.1f, 100.f);
-glm::mat4 perspectiveProjection = glm::perspective(glm::radians(FOV), (float)INITIAL_SCREEN_WIDTH / (float)INITIAL_SCREEN_HEIGHT, NEAR_PLANE, FAR_PLANE);
+float lastX = (float)SCREEN_WIDTH * 0.5f;
+float lastY = (float)SCREEN_HEIGHT * 0.5f;
+bool firstMouse = false;
+
+Camera camera;
+
+//tracks time
+float deltaTime = 0.0f;	// Time between current frame and last frame
+float lastFrame = 0.0f; // Time of last frame
+
+glm::mat4 orthographicProjection = glm::ortho(0.0f, (float)SCREEN_WIDTH, 0.0f, (float)SCREEN_HEIGHT, 0.1f, 100.f);
+glm::mat4 perspectiveProjection = glm::perspective(glm::radians(camera.fov), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, NEAR_PLANE, FAR_PLANE);
 
 glm::vec3 cubePositions[] = {
     glm::vec3(0.0f,  0.0f,  0.0f),
@@ -104,45 +122,6 @@ unsigned int rectangleIndices[] = {
 };
 unsigned int rectangleIndicesLength = sizeof(rectangleIndices) / sizeof(unsigned int);
 
-int initializeGLFWwindow()
-{
-   glfwInit();
-   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-   window = glfwCreateWindow(INITIAL_SCREEN_WIDTH, INITIAL_SCREEN_HEIGHT, "OpenGL Renderer", nullptr, nullptr);
-   if(window == nullptr)
-   {
-      LOG_ERROR("Failed to create GLFW window");
-      glfwTerminate();
-      return 0;
-   }
-   LOG_INFO("initialized GLFW window succesfully");
-   glfwMakeContextCurrent(window);
-   return 1;
-}
-
-int initializeGLAD()
-{
-   if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-   {
-      LOG_ERROR("Failed to initialize GLAD");
-      return 0;
-   }
-   LOG_INFO("initialized GLAD succesfully");
-   int maxVertexAttributes;
-   glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxVertexAttributes);
-   LOG_INFO("Max number of vertex attributes supported: {0}", maxVertexAttributes);
-
-   return 1;
-}
-
-void processInput(GLFWwindow* window)
-{
-   if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-      glfwSetWindowShouldClose(window, true);
-}
-
 int main(int argc, char** argv)
 {
    if(!initializeGLFWwindow()) {
@@ -151,19 +130,10 @@ int main(int argc, char** argv)
    if(!initializeGLAD()) {
       return -1;
    }
-   glEnable(GL_DEPTH_TEST);
-   glViewport(0, 0, 800, 600);
-   glfwSetFramebufferSizeCallback(window, [] (GLFWwindow* window, int width, int height) { 
-      orthographicProjection = glm::ortho(0.0f, (float)width, 0.0f, (float)height, 0.1f, 100.f);
-      perspectiveProjection = glm::perspective(glm::radians(FOV), (float)width / (float)height, NEAR_PLANE, FAR_PLANE);
-      glViewport(0, 0, width, height); 
-      });
 
-   glm::mat4 model = glm::mat4(1.0f);
-
+   camera.Position = glm::vec3(0, 0, 3.0f);
    glm::mat4 view = glm::mat4(1.0f);
-   // note that we're translating the scene in the reverse direction of where we want to move
-   view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+   view = glm::translate(view, camera.Position);
 
    std::vector<VertexAttribute> rectangleVertexAttributes = {
       VertexAttribute(3, GL_FLOAT), // position
@@ -211,11 +181,6 @@ int main(int argc, char** argv)
       float angle = 20.0f * index;
       model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
       material->setMat4("model", model);
-
-      
-      //localPos = glm::rotate(localPos, glm::radians(time * -55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-      //material->setMat4("model", localPos);
-
    };
 
    std::shared_ptr<GLEntity> glCube = std::make_shared<GLEntity>(cubeVertices, cubeDataSize, cubeVertexAttributes); 
@@ -232,6 +197,7 @@ int main(int argc, char** argv)
    glRectangle->setUpdateLambda(updateLambda);
    std::shared_ptr<GLDrawable> entities[] = { glMultiCube };
 
+   const float radius = 10.0f;
    while(!glfwWindowShouldClose(window))
    {
       processInput(window);
@@ -240,6 +206,11 @@ int main(int argc, char** argv)
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
       const float time = (float)glfwGetTime();
+      deltaTime = time - lastFrame;
+      lastFrame = time;
+
+      view = glm::lookAt(camera.Position, camera.Position + camera.Front, camera.Up);
+
       for(auto entity : entities)
       {
          entity->Render(time);
@@ -251,4 +222,90 @@ int main(int argc, char** argv)
 
    glfwTerminate();
    return 0;
+}
+
+int initializeGLFWwindow()
+{
+   glfwInit();
+   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+   window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "OpenGL Renderer", nullptr, nullptr);
+   if(window == nullptr)
+   {
+      LOG_ERROR("Failed to create GLFW window");
+      glfwTerminate();
+      return 0;
+   }
+   LOG_INFO("initialized GLFW window succesfully");
+   glfwMakeContextCurrent(window);
+   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+   glfwSetCursorPosCallback(window, mouse_callback);
+   glfwSetScrollCallback(window, scroll_callback);
+   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+   return 1;
+}
+
+int initializeGLAD()
+{
+   if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+   {
+      LOG_ERROR("Failed to initialize GLAD");
+      return 0;
+   }
+   LOG_INFO("initialized GLAD succesfully");
+   int maxVertexAttributes;
+   glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxVertexAttributes);
+   LOG_INFO("Max number of vertex attributes supported: {0}", maxVertexAttributes);
+   glEnable(GL_DEPTH_TEST);
+   glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+   return 1;
+}
+
+void processInput(GLFWwindow* window)
+{
+   if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+      glfwSetWindowShouldClose(window, true);
+
+   const bool isShifting = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
+   if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+      camera.ProcessKeyboard(Camera_Movement::FORWARD, deltaTime, isShifting);
+   if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+      camera.ProcessKeyboard(Camera_Movement::BACKWARD, deltaTime, isShifting);
+   if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+      camera.ProcessKeyboard(Camera_Movement::LEFT, deltaTime, isShifting);
+   if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+      camera.ProcessKeyboard(Camera_Movement::RIGHT, deltaTime, isShifting);
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+   camera.ProcessMouseScroll((float)yoffset);
+   perspectiveProjection = glm::perspective(glm::radians(camera.fov), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, NEAR_PLANE, FAR_PLANE);
+}
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+   float xPosF = (float)xpos;
+   float yPosF = (float)ypos;
+   if(firstMouse)
+   {
+      lastX = (float)xPosF;
+      lastY = (float)yPosF;
+      firstMouse = false;
+   }
+   float xoffset = xPosF - lastX;
+   float yoffset = lastY - yPosF;
+   lastX = (float)xPosF;
+   lastY = (float)yPosF;
+   camera.ProcessMouseMovement(xoffset, yoffset);
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+   SCREEN_WIDTH = width;
+   SCREEN_HEIGHT = height;
+   orthographicProjection = glm::ortho(0.0f, (float)SCREEN_WIDTH, 0.0f, (float)SCREEN_HEIGHT, 0.1f, 100.f);
+   perspectiveProjection = glm::perspective(glm::radians(camera.fov), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, NEAR_PLANE, FAR_PLANE);
+   glViewport(0, 0, width, height);
 }

@@ -34,6 +34,7 @@
     <None Include="bin\x86\freeglut.dll" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="source\glClasses\Camera.h" />
     <ClInclude Include="source\glClasses\glDrawables\GLDrawable.h" />
     <ClInclude Include="source\glClasses\GLMultiEntity.h" />
     <ClInclude Include="source\glClasses\Material.h" />
