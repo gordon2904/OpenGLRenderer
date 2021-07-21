@@ -1,5 +1,23 @@
 #pragma once
+#include <unordered_map>
 #include<glad/glad.h>
+
+namespace GLHelpers
+{
+   const std::unordered_map<unsigned int, unsigned int> GLTypeSizeLookUp
+   {
+      { GL_BYTE, sizeof(GLbyte) },
+      { GL_UNSIGNED_BYTE, sizeof(GLubyte) },
+      { GL_SHORT, sizeof(GLshort) },
+      { GL_UNSIGNED_SHORT, sizeof(GLushort) },
+      { GL_INT, sizeof(GLint) },
+      { GL_UNSIGNED_INT, sizeof(GLuint) },
+      { GL_HALF_FLOAT, sizeof(GLhalf) },
+      { GL_FLOAT, sizeof(GLfloat) },
+      { GL_DOUBLE, sizeof(GLdouble) }
+   };
+}
+
 
 enum GLShaderType
 {

@@ -19,6 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="source\glClasses\glDrawables\GLDrawable.cpp" />
+    <ClCompile Include="source\glClasses\GLMultiEntity.cpp" />
     <ClCompile Include="source\glClasses\Material.cpp" />
     <ClCompile Include="source\glClasses\Shader.cpp" />
     <ClCompile Include="source\glClasses\GLEntity.cpp" />
@@ -32,6 +34,9 @@
     <None Include="bin\x86\freeglut.dll" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="source\glClasses\Camera.h" />
+    <ClInclude Include="source\glClasses\glDrawables\GLDrawable.h" />
+    <ClInclude Include="source\glClasses\GLMultiEntity.h" />
     <ClInclude Include="source\glClasses\Material.h" />
     <ClInclude Include="source\glClasses\Shader.h" />
     <ClInclude Include="source\glClasses\GLEntity.h" />
