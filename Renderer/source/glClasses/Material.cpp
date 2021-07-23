@@ -63,18 +63,48 @@ void Material::setFloat(const std::string& name, float value) const
 
 void Material::setVec2(const std::string& name, float values[2]) const
 {
-   glUniform2f(glGetUniformLocation(mShader->getProgramId(), name.c_str()), values[0], values[1]);
+   setVec2(name, values[0], values[1]);
 }
+void Material::setVec2(const std::string& name, glm::vec2 values) const
+{
+   setVec2(name, values[0], values[1]);
+}
+void Material::setVec2(const std::string& name, float x, float y) const
+{
+   glUniform2f(glGetUniformLocation(mShader->getProgramId(), name.c_str()), x, y);
+}
+
 void Material::setVec3(const std::string& name, float values[3]) const
 {
-   glUniform3f(glGetUniformLocation(mShader->getProgramId(), name.c_str()), values[0], values[1], values[2]);
+   setVec3(name, values[0], values[1], values[2]);
 }
+void Material::setVec3(const std::string& name, glm::vec3 values) const
+{
+   setVec3(name, values[0], values[1], values[2]);
+}
+void Material::setVec3(const std::string& name, float x, float y, float z) const
+{
+   glUniform3f(glGetUniformLocation(mShader->getProgramId(), name.c_str()), x, y, z);
+}
+
 void Material::setVec4(const std::string& name, float values[4]) const
 {
-   glUniform4f(glGetUniformLocation(mShader->getProgramId(), name.c_str()), values[0], values[1], values[2], values[3]);
+   setVec4(name, values[0], values[1], values[2], values[3]);
+}
+void Material::setVec4(const std::string& name, glm::vec4 values) const
+{
+   setVec4(name, values[0], values[1], values[2], values[3]);
+}
+void Material::setVec4(const std::string& name, float x, float y, float z, float w) const
+{
+   glUniform4f(glGetUniformLocation(mShader->getProgramId(), name.c_str()), x, y, z, w);
 }
 
 void Material::setMat4(const std::string& name, const glm::mat4& transform) const
 {
    glUniformMatrix4fv(glGetUniformLocation(mShader->getProgramId(), name.c_str()), 1, GL_FALSE, glm::value_ptr(transform));
+}
+void Material::setMat3(const std::string& name, const glm::mat3& transform) const
+{
+   glUniformMatrix3fv(glGetUniformLocation(mShader->getProgramId(), name.c_str()), 1, GL_FALSE, glm::value_ptr(transform));
 }
