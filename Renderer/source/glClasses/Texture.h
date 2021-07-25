@@ -7,7 +7,7 @@ class Texture
 private:
    GLuint textureId;
 public:
-   Texture(const char* fileName, GLPixelDataFormat format, const bool flip = false, const char* assetPath = "assets\\textures\\");
+   Texture(const char* fileName, const bool flip = false, GLPixelDataFormat format = GLPixelDataFormat::NONE, const char* assetPath = "assets\\textures\\");
    ~Texture();
    void use(int textureUnitIndex = GL_TEXTURE0);
 };

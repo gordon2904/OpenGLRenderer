@@ -12,10 +12,12 @@ Material::Material(std::shared_ptr<Shader> shader) : mShader(shader)
 
 void Material::setTexture(const char* uniformName, std::shared_ptr<Texture> texture, unsigned int textureUnit)
 {
+   LOG_INFO("Min: {0}, Max: {1}.\nTexture Unit: {2}", GL_TEXTURE0, GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, textureUnit);
    if(textureUnit >= GL_TEXTURE0 && textureUnit < GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS)
    {
       texturesMap[textureUnit] = texture;
-      use();
+      mShader->use();
+      LOG_INFO("Setting texture unit: {0}", textureUnit - GL_TEXTURE0);
       setInt(uniformName, textureUnit - GL_TEXTURE0);
    }
    else

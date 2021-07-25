@@ -32,6 +32,7 @@ enum GLShaderType
 
 enum GLPixelDataFormat
 {
+   NONE = 0,
    RED = GL_RED, 
    RG = GL_RG, 
    RGB = GL_RGB, 

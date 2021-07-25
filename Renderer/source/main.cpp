@@ -141,13 +141,12 @@ int main(int argc, char** argv)
       VertexAttribute(2, GL_FLOAT)  // tex coord
    };
 
-   std::shared_ptr<Texture> boxDiffuseTex = std::make_shared<Texture>("container2.png", GLPixelDataFormat::RGBA, true);
-   std::shared_ptr<Texture> boxSpecularTex = std::make_shared<Texture>("container2_specular.png", GLPixelDataFormat::RGBA, true);
+   std::shared_ptr<Texture> boxDiffuseTex = std::make_shared<Texture>("container2.png");
+   std::shared_ptr<Texture> boxSpecularTex = std::make_shared<Texture>("container2_specular.png");
+   std::shared_ptr<Texture> boxEmissiveTex = std::make_shared<Texture>("matrix.jpg");
 
    std::shared_ptr<Shader> lightShader = std::make_shared<Shader>("light");
    std::shared_ptr<Material> lightMaterial = std::make_shared<Material>(lightShader);
-   lightMaterial->setTexture("material.diffuse", boxDiffuseTex, GL_TEXTURE0);
-   lightMaterial->setTexture("material.specular", boxSpecularTex, GL_TEXTURE0 + 1);
 
    glm::mat4 lightModel(1);
    lightModel = glm::translate(lightModel, glm::vec3(1.2f, 1.0f, 2.0f));
@@ -169,6 +168,7 @@ int main(int argc, char** argv)
 
       const float clampedT = 0.5f + (sin(time) * 0.5f);
 
+      material->setFloat("time", time);
       material->setFloat("material.shininess", 32.0f);
       material->setVec3("light.position", glm::vec3((*glLight->getModelMat())[3]));
       material->setVec3("light.ambient", ambientColor);
@@ -179,6 +179,9 @@ int main(int argc, char** argv)
    };
    std::shared_ptr<Shader> litShader = std::make_shared<Shader>("lit");
    std::shared_ptr<Material> litMaterial = std::make_shared<Material>(litShader);
+   litMaterial->setTexture("material.diffuse", boxDiffuseTex, GL_TEXTURE0);
+   litMaterial->setTexture("material.specular", boxSpecularTex, GL_TEXTURE0 + 1);
+   litMaterial->setTexture("material.emission", boxEmissiveTex, GL_TEXTURE0 + 2);
 
    std::shared_ptr<GLEntity> glLitCube = std::make_shared<GLEntity>(cubeVertices, cubeDataSize, cubeVertexAttributes);
    glLitCube->setMaterial(litMaterial);
