@@ -21,6 +21,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+float SinLerp(const float& t);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
@@ -156,9 +157,24 @@ int main(int argc, char** argv)
 
 
    std::function<void(glm::mat4&, std::shared_ptr<Material>, const float&)> litUpdateLambda = [&] (glm::mat4& model, std::shared_ptr<Material> material, const float& time) {
-      material->setVec3("objectColor", 1.0f, 0.5f, 0.31f);
-      material->setVec3("lightColor", 1.0f, 1.0f, 1.0f);
-      material->setVec3("lightPos", glm::vec3((*glLight->getModelMat())[3]));
+      glm::vec3 lightColor;
+      lightColor.x = SinLerp(time * 2.0f);
+      lightColor.y = SinLerp(time * 0.7f);
+      lightColor.z = SinLerp(time * 1.3f);
+
+      glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f);
+      glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f);
+
+      const float clampedT = 0.5f + (sin(time) * 0.5f);
+
+      material->setVec3("material.ambient", 1.0f, 0.5f, 0.31f);
+      material->setVec3("material.diffuse", 1.0f, 0.5f, 0.31f);
+      material->setVec3("material.specular", 0.5f, 0.5f, 0.5f);
+      material->setFloat("material.shininess", 32.0f);
+      material->setVec3("light.position", glm::vec3((*glLight->getModelMat())[3]));
+      material->setVec3("light.ambient", ambientColor);
+      material->setVec3("light.diffuse", diffuseColor); // darken diffuse light a bit
+      material->setVec3("light.specular", 1.0f, 1.0f, 1.0f);
       material->setMat3("normalMat", glm::mat3(glm::transpose(glm::inverse(model))));
       material->setVec3("viewPos", camera.Position);
    };
@@ -289,6 +305,12 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
    orthographicProjection = glm::ortho(0.0f, (float)SCREEN_WIDTH, 0.0f, (float)SCREEN_HEIGHT, 0.1f, 100.f);
    perspectiveProjection = glm::perspective(glm::radians(camera.fov), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, NEAR_PLANE, FAR_PLANE);
    glViewport(0, 0, width, height);
+}
+
+
+float SinLerp(const float& t)
+{
+   return 0.5f + (sin(t) * 0.5f);
 }
 
 //OLD USED GLEntities and materials
