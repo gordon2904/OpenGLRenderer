@@ -157,11 +157,21 @@ int main(int argc, char** argv)
    glLight->setModelMat(lightModel);
 
 
-   std::function<void(glm::mat4&, std::shared_ptr<Material>, const float&)> litUpdateLambda = [&] (glm::mat4& model, std::shared_ptr<Material> material, const float& time) {
-      glm::vec3 lightColor;
-      lightColor.x = SinLerp(time * 2.0f);
-      lightColor.y = SinLerp(time * 0.7f);
-      lightColor.z = SinLerp(time * 1.3f);
+   std::function<void(glm::mat4&, std::shared_ptr<Material>, const float&, unsigned int)> litUpdateLambda = [&] (glm::mat4& model, std::shared_ptr<Material> material, const float& time, unsigned int index) {
+      glm::vec3 lightColor(1);
+      //lightColor.x = SinLerp(time * 2.0f);
+      //lightColor.y = SinLerp(time * 0.7f);
+      //lightColor.z = SinLerp(time * 1.3f);
+      material->setVec3("light.position", camera.Position);
+      material->setVec3("light.direction", camera.Front);
+      material->setFloat("light.outerCutOff", glm::cos(glm::radians(15.0f)));
+      material->setFloat("light.cutOff", glm::cos(glm::radians(12.5f)));
+
+      model = glm::mat4(1.0f);
+      model = glm::translate(model, cubePositions[index]);
+      float angle = 20.0f * index;
+      model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+
 
       glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f);
       glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f);
@@ -170,20 +180,26 @@ int main(int argc, char** argv)
 
       material->setFloat("time", time);
       material->setFloat("material.shininess", 32.0f);
-      material->setVec3("light.position", glm::vec3((*glLight->getModelMat())[3]));
       material->setVec3("light.ambient", ambientColor);
       material->setVec3("light.diffuse", diffuseColor); // darken diffuse light a bit
       material->setVec3("light.specular", 1.0f, 1.0f, 1.0f);
       material->setMat3("normalMat", glm::mat3(glm::transpose(glm::inverse(model))));
       material->setVec3("viewPos", camera.Position);
    };
-   std::shared_ptr<Shader> litShader = std::make_shared<Shader>("lit");
-   std::shared_ptr<Material> litMaterial = std::make_shared<Material>(litShader);
+
+   std::shared_ptr<Shader> litShader = std::make_shared<Shader>("spot-lit");
+   std::shared_ptr<Material> litMaterial = std::make_shared<Material>(litShader); 
+   litMaterial->getShader()->use();
+   //litMaterial->setVec3("light.direction", -0.2f, -1.0f, -0.3f);
+   litMaterial->setFloat("light.constant",  1.0f);
+   litMaterial->setFloat("light.linear", 0.09f);
+   litMaterial->setFloat("light.quadratic", 0.032f);
    litMaterial->setTexture("material.diffuse", boxDiffuseTex, GL_TEXTURE0);
    litMaterial->setTexture("material.specular", boxSpecularTex, GL_TEXTURE0 + 1);
    litMaterial->setTexture("material.emission", boxEmissiveTex, GL_TEXTURE0 + 2);
 
-   std::shared_ptr<GLEntity> glLitCube = std::make_shared<GLEntity>(cubeVertices, cubeDataSize, cubeVertexAttributes);
+   std::shared_ptr<GLMultiEntity> glLitCube = std::make_shared <GLMultiEntity> (cubeVertices, cubeDataSize, cubeVertexAttributes);
+   glLitCube->setModelCount(10);
    glLitCube->setMaterial(litMaterial);
    glLitCube->setUpdateLambda(litUpdateLambda);
 
