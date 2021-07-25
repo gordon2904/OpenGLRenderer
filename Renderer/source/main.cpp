@@ -141,11 +141,13 @@ int main(int argc, char** argv)
       VertexAttribute(2, GL_FLOAT)  // tex coord
    };
 
+   std::shared_ptr<Texture> boxDiffuseTex = std::make_shared<Texture>("container2.png", GLPixelDataFormat::RGBA, true);
+   std::shared_ptr<Texture> boxSpecularTex = std::make_shared<Texture>("container2_specular.png", GLPixelDataFormat::RGBA, true);
+
    std::shared_ptr<Shader> lightShader = std::make_shared<Shader>("light");
    std::shared_ptr<Material> lightMaterial = std::make_shared<Material>(lightShader);
-   lightMaterial->use();
-   lightMaterial->setVec3("objectColor", 1.0f, 0.5f, 0.31f);
-   lightMaterial->setVec3("lightColor", 1.0f, 1.0f, 1.0f);
+   lightMaterial->setTexture("material.diffuse", boxDiffuseTex, GL_TEXTURE0);
+   lightMaterial->setTexture("material.specular", boxSpecularTex, GL_TEXTURE0 + 1);
 
    glm::mat4 lightModel(1);
    lightModel = glm::translate(lightModel, glm::vec3(1.2f, 1.0f, 2.0f));
@@ -167,9 +169,6 @@ int main(int argc, char** argv)
 
       const float clampedT = 0.5f + (sin(time) * 0.5f);
 
-      material->setVec3("material.ambient", 1.0f, 0.5f, 0.31f);
-      material->setVec3("material.diffuse", 1.0f, 0.5f, 0.31f);
-      material->setVec3("material.specular", 0.5f, 0.5f, 0.5f);
       material->setFloat("material.shininess", 32.0f);
       material->setVec3("light.position", glm::vec3((*glLight->getModelMat())[3]));
       material->setVec3("light.ambient", ambientColor);
