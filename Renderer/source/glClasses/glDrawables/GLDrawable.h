@@ -6,6 +6,14 @@
 #include "../../utils/glutils/GLUtils.h"
 #include "../Material.h"
 
+struct RenderInputs
+{
+   std::shared_ptr<Material> overrideMaterial = nullptr;
+   float time;
+   glm::mat4 view;
+   glm::mat4 projection;
+};
+
 class GLDrawable
 {
    //declared properties and methods
@@ -24,7 +32,7 @@ public:
    GLDrawable(void* data, unsigned int _dataLength, std::vector<VertexAttribute>& vertexAttributes);
    GLDrawable(void* data, unsigned int _dataLength, std::vector<VertexAttribute>& vertexAttributes, void* elements, unsigned int _elementsLength);
    virtual ~GLDrawable();
-   int virtual Render(const float& time, std::shared_ptr<Material> overrideMaterial = nullptr) = 0;
+   int virtual Render(RenderInputs& input) = 0;
 
    //defined methods
 protected:

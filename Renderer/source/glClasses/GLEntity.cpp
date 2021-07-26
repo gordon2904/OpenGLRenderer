@@ -10,21 +10,29 @@ GLEntity::GLEntity(void* data, unsigned int dataSize, std::vector<VertexAttribut
    : GLDrawable(data, dataSize, vertexAttributes, elements, _elementsLength), 
      model(glm::mat4(1.0f)), mUpdateLambda([] (glm::mat4&, std::shared_ptr<Material>, const float&) {}) {}
 
-int GLEntity::Render(const float &time, std::shared_ptr<Material> overrideMaterial)
+int GLEntity::Render(RenderInputs& input)
 {
    if(!mVisible)
    {
       return 0;
    }
-   std::shared_ptr<Material> material = useMaterial(overrideMaterial);
+   std::shared_ptr<Material> material = useMaterial(input.overrideMaterial);
    if(material == nullptr)
    {
       return 0;
    }
-   mUpdateLambda(model, material, time);
+   updateModelViewProjection(material, input.view, input.projection);
+   mUpdateLambda(model, material, input.time);
    glBindVertexArray(vao);
    Draw();
    return 1;
+}
+
+void GLEntity::updateModelViewProjection(std::shared_ptr<Material> material, glm::mat4& view, glm::mat4& projection)
+{
+   material->setMat4("model", model);
+   material->setMat4("view", view);
+   material->setMat4("projection", projection);
 }
 
 void GLEntity::setModelMat(const glm::mat4 mModel)
@@ -40,4 +48,9 @@ glm::mat4* GLEntity::getModelMat()
 void GLEntity::setUpdateLambda(std::function<void(glm::mat4&, std::shared_ptr<Material>, const float&)> updateLambda)
 {
    mUpdateLambda = updateLambda;
+}
+
+glm::vec3 GLEntity::getPosition() const
+{
+   return glm::vec3(model[3]);
 }

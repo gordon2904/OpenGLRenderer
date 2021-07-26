@@ -1,6 +1,7 @@
 #pragma once
 #include <unordered_map>
 #include<glad/glad.h>
+#include <glm/glm.hpp>
 
 namespace GLHelpers
 {
@@ -31,6 +32,7 @@ enum GLShaderType
 
 enum GLPixelDataFormat
 {
+   NONE = 0,
    RED = GL_RED, 
    RG = GL_RG, 
    RGB = GL_RGB, 
