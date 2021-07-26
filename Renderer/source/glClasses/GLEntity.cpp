@@ -49,3 +49,8 @@ void GLEntity::setUpdateLambda(std::function<void(glm::mat4&, std::shared_ptr<Ma
 {
    mUpdateLambda = updateLambda;
 }
+
+glm::vec3 GLEntity::getPosition() const
+{
+   return glm::vec3(model[3]);
+}

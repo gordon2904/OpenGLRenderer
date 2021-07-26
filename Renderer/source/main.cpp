@@ -7,6 +7,7 @@
 #include "utils/logger/Logger.h"
 #include "utils/glutils/GLUtils.h"
 #include<iostream>
+#include<sstream>
 #include<glad/glad.h>
 #include<GLFW/glfw3.h>
 
@@ -16,6 +17,9 @@
 #include"glClasses/Texture.h"
 #include"glClasses/Shader.h"
 #include"glClasses/Camera.h"
+
+#include "glClasses/glLights/GLSpotLight.h"
+#include "glClasses/glLights/GLDirectionalLight.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -149,8 +153,25 @@ int main(int argc, char** argv)
    std::shared_ptr<Material> lightMaterial = std::make_shared<Material>(lightShader);
 
    glm::mat4 lightModel(1);
-   lightModel = glm::translate(lightModel, glm::vec3(1.2f, 1.0f, 2.0f));
    lightModel = glm::scale(lightModel, glm::vec3(0.2f));
+
+
+   std::vector<std::shared_ptr<GLDirectionalLight>> directionalLights;
+   std::vector<std::shared_ptr<GLSpotLight>> spotLights;
+   std::vector<std::shared_ptr<GLPointLight>> pointLights;
+   glm::vec3 pointLightPositions[] = {
+      glm::vec3(0.7f,  0.2f,  2.0f),
+      glm::vec3(2.3f, -3.3f, -4.0f),
+      glm::vec3(-4.0f,  2.0f, -12.0f),
+      glm::vec3(0.0f,  0.0f, -3.0f)
+   };
+   for(int i = 0; i < 4; ++i)
+   {
+      const std::shared_ptr<GLPointLight> pointLight = std::make_shared<GLPointLight>(cubeVertices, cubeDataSize, cubeVertexAttributes);
+      pointLight->setMaterial(lightMaterial);
+      pointLight->setModelMat(glm::translate(lightModel, pointLightPositions[i]));
+      pointLights.push_back(pointLight);
+   }
 
    std::shared_ptr<GLEntity> glLight = std::make_shared<GLEntity>(cubeVertices, cubeDataSize, cubeVertexAttributes);
    glLight->setMaterial(lightMaterial);
@@ -158,42 +179,72 @@ int main(int argc, char** argv)
 
 
    std::function<void(glm::mat4&, std::shared_ptr<Material>, const float&, unsigned int)> litUpdateLambda = [&] (glm::mat4& model, std::shared_ptr<Material> material, const float& time, unsigned int index) {
-      glm::vec3 lightColor(1);
-      //lightColor.x = SinLerp(time * 2.0f);
-      //lightColor.y = SinLerp(time * 0.7f);
-      //lightColor.z = SinLerp(time * 1.3f);
-      material->setVec3("light.position", camera.Position);
-      material->setVec3("light.direction", camera.Front);
-      material->setFloat("light.outerCutOff", glm::cos(glm::radians(15.0f)));
-      material->setFloat("light.cutOff", glm::cos(glm::radians(12.5f)));
+      if(index == 0)
+      {
+         //update point lights
+         material->setInt("pointLightsLength", pointLights.size());
+         for(int i = 0; i < pointLights.size(); ++i)
+         {
+            const std::shared_ptr<GLPointLight> light = pointLights[i];
+            std::stringstream stringStream;
+            stringStream << "pointLights[" << i << "]";
+            material->setVec3(stringStream.str() + ".position", light->getPosition());
+            material->setFloat(stringStream.str() + ".constant", light->getConstant());
+            material->setFloat(stringStream.str() + ".linear", light->getLinear());
+            material->setFloat(stringStream.str() + ".quadratic", light->getQuadratic());
+            material->setVec3(stringStream.str() + ".ambient", light->getAmbientColour());
+            material->setVec3(stringStream.str() + ".diffuse", light->getDiffuseColour());
+            material->setVec3(stringStream.str() + ".specular", light->getSpecularColour());
+         }
+
+         //update direction lights
+         material->setInt("dirLightsLength", 0);
+         for(int i = 0; i < 0; ++i)
+         {
+            const std::shared_ptr<GLDirectionalLight> light = directionalLights[i];
+            std::stringstream stringStream;
+            stringStream << "dirLights[" << i << "]";
+            material->setVec3(stringStream.str() + ".direction", light->getDirection());
+            material->setVec3(stringStream.str() + ".ambient", light->getAmbientColour());
+            material->setVec3(stringStream.str() + ".diffuse", light->getDiffuseColour());
+            material->setVec3(stringStream.str() + ".specular", light->getSpecularColour());
+         }
+
+         //update spot lights
+         material->setInt("spotLightsLength", 0);
+         for(int i = 0; i < 0; ++i)
+         {
+            const std::shared_ptr<GLSpotLight> light = spotLights[i];
+            std::stringstream stringStream;
+            stringStream << "spotlights[" << i << "]";
+            material->setVec3(stringStream.str() + ".position", light->getPosition());
+            material->setVec3(stringStream.str() + ".direction", light->getDirection());
+            material->setFloat(stringStream.str() + ".cutOff", light->getCutOff());
+            material->setFloat(stringStream.str() + ".outerCutOff", light->getOuterCutOff());
+            material->setFloat(stringStream.str() + ".constant", light->getConstant());
+            material->setFloat(stringStream.str() + ".linear", light->getLinear());
+            material->setFloat(stringStream.str() + ".quadratic", light->getQuadratic());
+            material->setVec3(stringStream.str() + ".ambient", light->getAmbientColour());
+            material->setVec3(stringStream.str() + ".diffuse", light->getDiffuseColour());
+            material->setVec3(stringStream.str() + ".specular", light->getSpecularColour());
+         }
+      }
+
 
       model = glm::mat4(1.0f);
       model = glm::translate(model, cubePositions[index]);
       float angle = 20.0f * index;
       model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
 
-
-      glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f);
-      glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f);
-
-      const float clampedT = 0.5f + (sin(time) * 0.5f);
-
       material->setFloat("time", time);
       material->setFloat("material.shininess", 32.0f);
-      material->setVec3("light.ambient", ambientColor);
-      material->setVec3("light.diffuse", diffuseColor); // darken diffuse light a bit
-      material->setVec3("light.specular", 1.0f, 1.0f, 1.0f);
       material->setMat3("normalMat", glm::mat3(glm::transpose(glm::inverse(model))));
       material->setVec3("viewPos", camera.Position);
    };
 
-   std::shared_ptr<Shader> litShader = std::make_shared<Shader>("spot-lit");
+   std::shared_ptr<Shader> litShader = std::make_shared<Shader>("lit");
    std::shared_ptr<Material> litMaterial = std::make_shared<Material>(litShader); 
    litMaterial->getShader()->use();
-   //litMaterial->setVec3("light.direction", -0.2f, -1.0f, -0.3f);
-   litMaterial->setFloat("light.constant",  1.0f);
-   litMaterial->setFloat("light.linear", 0.09f);
-   litMaterial->setFloat("light.quadratic", 0.032f);
    litMaterial->setTexture("material.diffuse", boxDiffuseTex, GL_TEXTURE0);
    litMaterial->setTexture("material.specular", boxSpecularTex, GL_TEXTURE0 + 1);
    litMaterial->setTexture("material.emission", boxEmissiveTex, GL_TEXTURE0 + 2);
@@ -203,6 +254,7 @@ int main(int argc, char** argv)
    glLitCube->setMaterial(litMaterial);
    glLitCube->setUpdateLambda(litUpdateLambda);
 
+   std::shared_ptr<GLLight> lights[] = { pointLights[0] };
    std::shared_ptr<GLDrawable> entities[] = { glLight, glLitCube };
 
    const float radius = 10.0f;
@@ -226,6 +278,13 @@ int main(int argc, char** argv)
          perspectiveProjection   //glm::mat4 projection;
       };
 
+      //update lights
+      for(auto light : pointLights)
+      {
+         light->Render(renderInputs);
+      }
+
+      //render scene
       for(auto entity : entities)
       {
          entity->Render(renderInputs);

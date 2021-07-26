@@ -57,6 +57,18 @@
     <ClCompile Include="source\glClasses\GLMultiEntity.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\glClasses\glLights\GLLight.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\glClasses\glLights\GLSpotLight.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\glClasses\glLights\GLPointLight.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\glClasses\glLights\GLDirectionalLight.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="bin\x64\freeglut.dll">
@@ -92,6 +104,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\glClasses\Camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\glClasses\glLights\GLLight.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\glClasses\glLights\GLSpotLight.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\glClasses\glLights\GLPointLight.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\glClasses\glLights\GLDirectionalLight.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

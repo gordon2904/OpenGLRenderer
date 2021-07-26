@@ -14,4 +14,5 @@ public:
    void setModelMat(const glm::mat4 mModel);
    glm::mat4* getModelMat();
    void setUpdateLambda(std::function<void(glm::mat4&, std::shared_ptr<Material>, const float&)> updateLambda);
+   glm::vec3 getPosition() const;
 };
