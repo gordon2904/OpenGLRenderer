@@ -176,7 +176,9 @@ int main(int argc, char** argv)
       const std::shared_ptr<GLPointLight> pointLight = std::make_shared<GLPointLight>(cubeVertices, cubeDataSize, cubeVertexAttributes);
       pointLight->setMaterial(lightMaterial);
       pointLight->setModelMat(glm::translate(lightModel, pointLightPositions[i]));
-      pointLight->setAmbientColour(pointLightColours[i]);
+      pointLight->setAmbientColour(pointLightColours[i] * 0.1f);
+      pointLight->setDiffuseColour(pointLightColours[i]);
+      pointLight->setSpecularColour(pointLightColours[i]);
       pointLights.push_back(pointLight);
    }
 

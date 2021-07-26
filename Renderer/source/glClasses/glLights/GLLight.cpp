@@ -53,7 +53,7 @@ int GLLight::Render(RenderInputs& input)
    }
    updateModelViewProjection(material, input.view, input.projection);
    mUpdateLambda(model, material, input.time);
-   material->setVec3("lightColour", ambientColour);
+   material->setVec3("lightColour", diffuseColour);
    glBindVertexArray(vao);
    Draw();
    return 1;
