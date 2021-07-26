@@ -164,12 +164,19 @@ int main(int argc, char** argv)
       glm::vec3(2.3f, -3.3f, -4.0f),
       glm::vec3(-4.0f,  2.0f, -12.0f),
       glm::vec3(0.0f,  0.0f, -3.0f)
+   };   
+   glm::vec3 pointLightColours[] = {
+      glm::vec3(0.7f,  0.2f,  1.0f),
+      glm::vec3(0.2f, 0.0f, 0.8f),
+      glm::vec3(0.2f, 0.9f, 0.0f),
+      glm::vec3(1.0f, 0.2f, 0.0f),
    };
    for(int i = 0; i < 4; ++i)
    {
       const std::shared_ptr<GLPointLight> pointLight = std::make_shared<GLPointLight>(cubeVertices, cubeDataSize, cubeVertexAttributes);
       pointLight->setMaterial(lightMaterial);
       pointLight->setModelMat(glm::translate(lightModel, pointLightPositions[i]));
+      pointLight->setAmbientColour(pointLightColours[i]);
       pointLights.push_back(pointLight);
    }
 
