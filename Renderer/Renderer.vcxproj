@@ -19,6 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="source\glClasses\Model.cpp" />
+    <ClCompile Include="source\glClasses\Mesh.cpp" />
     <ClCompile Include="source\glClasses\glLights\GLDirectionalLight.cpp" />
     <ClCompile Include="source\glClasses\glLights\GLPointLight.cpp" />
     <ClCompile Include="source\glClasses\glLights\GLSpotLight.cpp" />
@@ -38,6 +40,8 @@
     <None Include="bin\x86\freeglut.dll" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="source\glClasses\Model.h" />
+    <ClInclude Include="source\glClasses\Mesh.h" />
     <ClInclude Include="source\glClasses\glLights\GLDirectionalLight.h" />
     <ClInclude Include="source\glClasses\glLights\GLPointLight.h" />
     <ClInclude Include="source\glClasses\glLights\GLSpotLight.h" />

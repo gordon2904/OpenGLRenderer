@@ -21,8 +21,8 @@ int GLEntity::Render(RenderInputs& input)
    {
       return 0;
    }
-   updateModelViewProjection(material, input.view, input.projection);
    mUpdateLambda(model, material, input.time);
+   updateModelViewProjection(material, input.view, input.projection);
    glBindVertexArray(vao);
    Draw();
    return 1;

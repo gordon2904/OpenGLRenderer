@@ -51,6 +51,12 @@ Texture::Texture(const char* fileName, const bool flip, GLPixelDataFormat format
    stbi_image_free(textureData);
 }
 
+
+GLuint Texture::getTextureId()
+{
+   return textureId;
+}
+
 Texture::~Texture()
 {
 
