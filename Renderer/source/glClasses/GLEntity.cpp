@@ -8,7 +8,7 @@ GLEntity::GLEntity(void* data, unsigned int dataSize, std::vector<VertexAttribut
 
 GLEntity::GLEntity(void* data, unsigned int dataSize, std::vector<VertexAttribute>& vertexAttributes, void* elements, unsigned int _elementsLength)
    : GLDrawable(data, dataSize, vertexAttributes, elements, _elementsLength), 
-     model(glm::mat4(1.0f)), mUpdateLambda([] (glm::mat4&, std::shared_ptr<Material>, const float&) {}) {}
+     model(glm::mat4(1.0f)), updateLambda([] (glm::mat4&, std::shared_ptr<Material>, const float&) {}) {}
 
 int GLEntity::Render(RenderInputs& input)
 {
@@ -21,7 +21,7 @@ int GLEntity::Render(RenderInputs& input)
    {
       return 0;
    }
-   mUpdateLambda(model, material, input.time);
+   updateLambda(model, material, input.time);
    updateModelViewProjection(material, input.view, input.projection);
    glBindVertexArray(vao);
    Draw();
@@ -47,7 +47,7 @@ glm::mat4* GLEntity::getModelMat()
 
 void GLEntity::setUpdateLambda(std::function<void(glm::mat4&, std::shared_ptr<Material>, const float&)> updateLambda)
 {
-   mUpdateLambda = updateLambda;
+   this->updateLambda = updateLambda;
 }
 
 glm::vec3 GLEntity::getPosition() const

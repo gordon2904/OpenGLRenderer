@@ -21,7 +21,6 @@ void Model::processNode(aiNode* node, const aiScene* scene)
    // process all the node's meshes (if any)
    for(unsigned int i = 0; i < node->mNumMeshes; i++)
    {
-      LOG_INFO("TEST");
       aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
       meshes.push_back(processMesh(mesh, scene));
    }
@@ -44,10 +43,18 @@ std::shared_ptr<Mesh> Model::processMesh(aiMesh* mesh, const aiScene* scene)
       // process vertex positions, normals and texture coordinates
       vertex.Position = glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
       vertex.Normal = glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
-      if(mesh->mTextureCoords[0])
+      if(mesh->HasTextureCoords(0))
+      {
          vertex.TexCoords = glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
+      }
       else
          vertex.TexCoords = glm::vec2(0.0f, 0.0f);
+      if(mesh->HasTangentsAndBitangents())
+      {
+         LOG_INFO("has tangent and bitangents");
+         vertex.Tangent = glm::vec3(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z);
+         vertex.Bitangent = glm::vec3(mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z);
+      }
 
       vertices.push_back(vertex);
    }
@@ -61,14 +68,23 @@ std::shared_ptr<Mesh> Model::processMesh(aiMesh* mesh, const aiScene* scene)
    // process material
    if(mesh->mMaterialIndex >= 0)
    {
-      LOG_INFO("Began loading mesh materials");
       aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+
       std::vector<MeshTexture> diffuseMaps = loadMaterialTextures(material,
          aiTextureType_DIFFUSE, "texture_diffuse");
       textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+
       std::vector<MeshTexture> specularMaps = loadMaterialTextures(material,
          aiTextureType_SPECULAR, "texture_specular");
       textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+
+      std::vector<MeshTexture> normalMaps = loadMaterialTextures(material,
+         aiTextureType_SPECULAR, "texture_normal");
+      textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+
+      std::vector<MeshTexture> heightMaps = loadMaterialTextures(material,
+         aiTextureType_SPECULAR, "texture_height");
+      textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
    }
 
    return std::make_shared<Mesh>(vertices, indices, textures);
@@ -123,7 +139,7 @@ void Model::updateModelViewProjection(std::shared_ptr<Shader> shader, glm::mat4&
    shader->setMat4("projection", projection);
 }
 
-void Model::setUpdateLambda(std::function<void(glm::mat4&, std::shared_ptr<Shader>, const float&)> updateLambda)
+void Model::setUpdateLambda(std::function<void(glm::mat4&, std::shared_ptr<Shader>, const float&, const float&)> updateLambda)
 {
    this->updateLambda = updateLambda;
 }
@@ -133,7 +149,7 @@ glm::vec3 Model::getPosition() const
    return glm::vec3(model[3]);
 }
 
-int Model::Render(float time, glm::mat4 view, glm::mat4 projection, std::shared_ptr<Shader> overrideShader)
+int Model::Render(float time, float delta, glm::mat4 view, glm::mat4 projection, std::shared_ptr<Shader> overrideShader)
 {
    if(!visible)
    {
@@ -144,7 +160,7 @@ int Model::Render(float time, glm::mat4 view, glm::mat4 projection, std::shared_
    {
       return 0;
    }
-   updateLambda(model, shader, time);
+   updateLambda(model, shader, time, delta);
    updateModelViewProjection(shader, view, projection);
 
    for(std::shared_ptr<Mesh> mesh : meshes)

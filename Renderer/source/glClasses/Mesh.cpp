@@ -39,12 +39,20 @@ void Mesh::setupMesh()
    // vertex texture coords
    glEnableVertexAttribArray(2);
    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
+   // vertex texture coords
+   glEnableVertexAttribArray(3);
+   glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Tangent));
+   // vertex texture coords
+   glEnableVertexAttribArray(4);
+   glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Bitangent));
 }
 
 void Mesh::SetTextures(std::shared_ptr<Shader> shader)
 {
    unsigned int diffuseNr = 1;
    unsigned int specularNr = 1;
+   unsigned int normalNr = 1;
+   unsigned int heightNr = 1;
    for(unsigned int i = 0; i < textures.size(); i++)
    {
       glActiveTexture(GL_TEXTURE0 + i); // activate proper texture unit before binding
@@ -55,7 +63,11 @@ void Mesh::SetTextures(std::shared_ptr<Shader> shader)
          number = std::to_string(diffuseNr++);
       else if(name == "texture_specular")
          number = std::to_string(specularNr++);
-      shader->setInt((name + number).c_str(), i);
+      else if(name == "texture_normal")
+         number = std::to_string(normalNr++);
+      else if(name == "texture_height")
+         number = std::to_string(heightNr++);
+      shader->setInt(("material." + name + number).c_str(), i);
       glBindTexture(GL_TEXTURE_2D, textures[i].texture->getTextureId());
    }
 }
