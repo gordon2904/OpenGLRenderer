@@ -25,6 +25,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "glClasses/Model.h"
+
 float SinLerp(const float& t);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -145,9 +147,9 @@ int main(int argc, char** argv)
       VertexAttribute(2, GL_FLOAT)  // tex coord
    };
 
-   std::shared_ptr<Texture> boxDiffuseTex = std::make_shared<Texture>("container2.png");
-   std::shared_ptr<Texture> boxSpecularTex = std::make_shared<Texture>("container2_specular.png");
-   std::shared_ptr<Texture> boxEmissiveTex = std::make_shared<Texture>("matrix.jpg");
+   //std::shared_ptr<Texture> boxDiffuseTex = std::make_shared<Texture>("container2.png");
+   //std::shared_ptr<Texture> boxSpecularTex = std::make_shared<Texture>("container2_specular.png");
+   //std::shared_ptr<Texture> boxEmissiveTex = std::make_shared<Texture>("matrix.jpg");
 
    std::shared_ptr<Shader> lightShader = std::make_shared<Shader>("light");
    std::shared_ptr<Material> lightMaterial = std::make_shared<Material>(lightShader);
@@ -182,98 +184,103 @@ int main(int argc, char** argv)
       pointLights.push_back(pointLight);
    }
 
-   std::shared_ptr<GLEntity> glLight = std::make_shared<GLEntity>(cubeVertices, cubeDataSize, cubeVertexAttributes);
-   glLight->setMaterial(lightMaterial);
-   glLight->setModelMat(lightModel);
+   //std::shared_ptr<GLEntity> glLight = std::make_shared<GLEntity>(cubeVertices, cubeDataSize, cubeVertexAttributes);
+   //glLight->setMaterial(lightMaterial);
+   //glLight->setModelMat(lightModel);
 
 
-   std::function<void(glm::mat4&, std::shared_ptr<Material>, const float&, unsigned int)> litUpdateLambda = [&] (glm::mat4& model, std::shared_ptr<Material> material, const float& time, unsigned int index) {
-      if(index == 0)
+   std::function<void(glm::mat4&, std::shared_ptr<Shader>, const float&, const float& delta)> litUpdateLambda = [&] (glm::mat4& model, std::shared_ptr<Shader> shader, const float& time, const float& delta) {
+
+      //update point lights
+      shader->setInt("pointLightsLength", pointLights.size());
+      for(int i = 0; i < pointLights.size(); ++i)
       {
-         //update point lights
-         material->setInt("pointLightsLength", pointLights.size());
-         for(int i = 0; i < pointLights.size(); ++i)
-         {
-            const std::shared_ptr<GLPointLight> light = pointLights[i];
-            std::stringstream stringStream;
-            stringStream << "pointLights[" << i << "]";
-            material->setVec3(stringStream.str() + ".position", light->getPosition());
-            material->setFloat(stringStream.str() + ".constant", light->getConstant());
-            material->setFloat(stringStream.str() + ".linear", light->getLinear());
-            material->setFloat(stringStream.str() + ".quadratic", light->getQuadratic());
-            material->setVec3(stringStream.str() + ".ambient", light->getAmbientColour());
-            material->setVec3(stringStream.str() + ".diffuse", light->getDiffuseColour());
-            material->setVec3(stringStream.str() + ".specular", light->getSpecularColour());
-         }
-
-         //update direction lights
-         material->setInt("dirLightsLength", 0);
-         for(int i = 0; i < 0; ++i)
-         {
-            const std::shared_ptr<GLDirectionalLight> light = directionalLights[i];
-            std::stringstream stringStream;
-            stringStream << "dirLights[" << i << "]";
-            material->setVec3(stringStream.str() + ".direction", light->getDirection());
-            material->setVec3(stringStream.str() + ".ambient", light->getAmbientColour());
-            material->setVec3(stringStream.str() + ".diffuse", light->getDiffuseColour());
-            material->setVec3(stringStream.str() + ".specular", light->getSpecularColour());
-         }
-
-         //update spot lights
-         material->setInt("spotLightsLength", 0);
-         for(int i = 0; i < 0; ++i)
-         {
-            const std::shared_ptr<GLSpotLight> light = spotLights[i];
-            std::stringstream stringStream;
-            stringStream << "spotlights[" << i << "]";
-            material->setVec3(stringStream.str() + ".position", light->getPosition());
-            material->setVec3(stringStream.str() + ".direction", light->getDirection());
-            material->setFloat(stringStream.str() + ".cutOff", light->getCutOff());
-            material->setFloat(stringStream.str() + ".outerCutOff", light->getOuterCutOff());
-            material->setFloat(stringStream.str() + ".constant", light->getConstant());
-            material->setFloat(stringStream.str() + ".linear", light->getLinear());
-            material->setFloat(stringStream.str() + ".quadratic", light->getQuadratic());
-            material->setVec3(stringStream.str() + ".ambient", light->getAmbientColour());
-            material->setVec3(stringStream.str() + ".diffuse", light->getDiffuseColour());
-            material->setVec3(stringStream.str() + ".specular", light->getSpecularColour());
-         }
+         const std::shared_ptr<GLPointLight> light = pointLights[i];
+         std::stringstream stringStream;
+         stringStream << "pointLights[" << i << "]";
+         shader->setVec3(stringStream.str() + ".position", light->getPosition());
+         shader->setFloat(stringStream.str() + ".constant", light->getConstant());
+         shader->setFloat(stringStream.str() + ".linear", light->getLinear());
+         shader->setFloat(stringStream.str() + ".quadratic", light->getQuadratic());
+         shader->setVec3(stringStream.str() + ".ambient", light->getAmbientColour());
+         shader->setVec3(stringStream.str() + ".diffuse", light->getDiffuseColour());
+         shader->setVec3(stringStream.str() + ".specular", light->getSpecularColour());
       }
 
+      //update direction lights
+      shader->setInt("dirLightsLength", 0);
+      for(int i = 0; i < 0; ++i)
+      {
+         const std::shared_ptr<GLDirectionalLight> light = directionalLights[i];
+         std::stringstream stringStream;
+         stringStream << "dirLights[" << i << "]";
+         shader->setVec3(stringStream.str() + ".direction", light->getDirection());
+         shader->setVec3(stringStream.str() + ".ambient", light->getAmbientColour());
+         shader->setVec3(stringStream.str() + ".diffuse", light->getDiffuseColour());
+         shader->setVec3(stringStream.str() + ".specular", light->getSpecularColour());
+      }
 
-      model = glm::mat4(1.0f);
-      model = glm::translate(model, cubePositions[index]);
-      float angle = 20.0f * index;
-      model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+      //update spot lights
+      shader->setInt("spotLightsLength", 0);
+      for(int i = 0; i < 0; ++i)
+      {
+         const std::shared_ptr<GLSpotLight> light = spotLights[i];
+         std::stringstream stringStream;
+         stringStream << "spotlights[" << i << "]";
+         shader->setVec3(stringStream.str() + ".position", light->getPosition());
+         shader->setVec3(stringStream.str() + ".direction", light->getDirection());
+         shader->setFloat(stringStream.str() + ".cutOff", light->getCutOff());
+         shader->setFloat(stringStream.str() + ".outerCutOff", light->getOuterCutOff());
+         shader->setFloat(stringStream.str() + ".constant", light->getConstant());
+         shader->setFloat(stringStream.str() + ".linear", light->getLinear());
+         shader->setFloat(stringStream.str() + ".quadratic", light->getQuadratic());
+         shader->setVec3(stringStream.str() + ".ambient", light->getAmbientColour());
+         shader->setVec3(stringStream.str() + ".diffuse", light->getDiffuseColour());
+         shader->setVec3(stringStream.str() + ".specular", light->getSpecularColour());
+      }
 
-      material->setFloat("time", time);
-      material->setFloat("material.shininess", 32.0f);
-      material->setMat3("normalMat", glm::mat3(glm::transpose(glm::inverse(model))));
-      material->setVec3("viewPos", camera.Position);
+      float angle = 20.0f;
+      //model = glm::rotate(model, glm::radians(deltaTime * angle), glm::vec3(1.0f, 0.3f, 0.5f));
+
+      shader->setFloat("time", time);
+      shader->setFloat("material.shininess", 32.0f);
+      shader->setMat3("normalMat", glm::mat3(glm::transpose(glm::inverse(model))));
+      shader->setVec3("viewPos", camera.Position);
    };
 
-   std::shared_ptr<Shader> litShader = std::make_shared<Shader>("lit");
-   std::shared_ptr<Material> litMaterial = std::make_shared<Material>(litShader); 
-   litMaterial->getShader()->use();
-   litMaterial->setTexture("material.diffuse", boxDiffuseTex, GL_TEXTURE0);
-   litMaterial->setTexture("material.specular", boxSpecularTex, GL_TEXTURE0 + 1);
-   litMaterial->setTexture("material.emission", boxEmissiveTex, GL_TEXTURE0 + 2);
+   //std::shared_ptr<Shader> litShader = std::make_shared<Shader>("lit");
+   //std::shared_ptr<Material> litMaterial = std::make_shared<Material>(litShader); 
+   //litMaterial->getShader()->use();
+   //litMaterial->setTexture("material.diffuse", boxDiffuseTex, GL_TEXTURE0);
+   //litMaterial->setTexture("material.specular", boxSpecularTex, GL_TEXTURE0 + 1);
+   //litMaterial->setTexture("material.emission", boxEmissiveTex, GL_TEXTURE0 + 2);
 
-   std::shared_ptr<GLMultiEntity> glLitCube = std::make_shared <GLMultiEntity> (cubeVertices, cubeDataSize, cubeVertexAttributes);
-   glLitCube->setModelCount(10);
-   glLitCube->setMaterial(litMaterial);
-   glLitCube->setUpdateLambda(litUpdateLambda);
+   //std::shared_ptr<GLMultiEntity> glLitCube = std::make_shared <GLMultiEntity> (cubeVertices, cubeDataSize, cubeVertexAttributes);
+   //glLitCube->setModelCount(10);
+   //glLitCube->setMaterial(litMaterial);
+   //glLitCube->setUpdateLambda(litUpdateLambda);
 
-   std::shared_ptr<GLLight> lights[] = { pointLights[0] };
-   std::shared_ptr<GLDrawable> entities[] = { glLight, glLitCube };
+   //std::shared_ptr<GLLight> lights[] = { pointLights[0] };
+   //std::shared_ptr<GLDrawable> entities[] = { glLight, glLitCube };
+
+   const char* modelPath = "assets/backpack/backpack.obj";
+   //const char* modelPath = "assets/sponza/sponza.obj";
+   std::shared_ptr<Shader> debugShader = std::make_shared<Shader>("debug");
+   std::shared_ptr<Shader> unlitShader = std::make_shared<Shader>("lit-model");
+   std::shared_ptr<Model> model = std::make_shared<Model>(modelPath);
+   model->setUpdateLambda(litUpdateLambda);
+   model->setShader(unlitShader);
 
    const float radius = 10.0f;
    while(!glfwWindowShouldClose(window))
    {
       processInput(window);
 
-      glClearColor(0.0f, 0.3f, 0.9f, 1.0f); 
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+      glClearColor(0.0f, 0.3f, 0.9f, 1.0f);
+      glEnable(GL_DEPTH_TEST);
+      glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+      glStencilMask(0x00); //stencil mask off by default
       const float time = (float)glfwGetTime();
       deltaTime = time - lastFrame;
       lastFrame = time;
@@ -288,16 +295,35 @@ int main(int argc, char** argv)
       };
 
       //update lights
-      for(auto light : pointLights)
-      {
-         light->Render(renderInputs);
-      }
+      //for(auto light : pointLights)
+      //{
+      //   light->Render(renderInputs);
+      //}
 
-      //render scene
-      for(auto entity : entities)
-      {
-         entity->Render(renderInputs);
-      }
+      ////render scene
+      //for(auto entity : entities)
+      //{
+      //   entity->Render(renderInputs);
+      //}
+
+      model->setShader(unlitShader); 
+      glStencilFunc(GL_ALWAYS, 1, 0xFF);
+      glStencilMask(0xFF);
+      glm::mat4 mat(1);
+      model->setModelMat(mat);
+      model->Render(time, deltaTime, view, perspectiveProjection);
+
+      glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+      glStencilMask(0x00);
+      glDisable(GL_DEPTH_TEST);
+      mat = glm::scale(mat, glm::vec3(1 / 1.1));
+      model->setModelMat(mat);
+      model->setShader(debugShader);
+      model->Render(time, deltaTime, view, perspectiveProjection);
+
+      glStencilMask(0xFF);
+      glStencilFunc(GL_ALWAYS, 1, 0xFF);
+      glEnable(GL_DEPTH_TEST);
 
       glfwSwapBuffers(window);
       glfwPollEvents();
@@ -340,7 +366,10 @@ int initializeGLAD()
    int maxVertexAttributes;
    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxVertexAttributes);
    LOG_INFO("Max number of vertex attributes supported: {0}", maxVertexAttributes);
-   glEnable(GL_DEPTH_TEST);
+   glEnable(GL_BLEND);
+   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+   glEnable(GL_STENCIL_TEST);
+   glEnable(GL_CULL_FACE);
    glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
    return 1;
 }

@@ -40,7 +40,8 @@ GLDrawable::GLDrawable(void* data, unsigned int dataSize, std::vector<VertexAttr
 
 GLDrawable::~GLDrawable()
 {
-   LOG_INFO("deleting GLDrawable\nvao: {0}\nvbo: {1}", vao, vbo);
+   LOG_INFO("deleting GLDrawable\nvao: {0}\nvbo: {1}\nebo: {2}", vao, vbo, ebo);
    glDeleteVertexArrays(1, &vao);
    glDeleteBuffers(1, &vbo);
+   glDeleteBuffers(1, &ebo);
 }

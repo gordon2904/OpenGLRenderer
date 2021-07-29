@@ -21,7 +21,17 @@
 x64/
 x86/
 bld/
-[Bb]in/
+
+![Bb]in
+/[Bb]in/*
+![Bb]in/[xX]64
+/[Bb]in/[xX]64/*
+
+
+# Don't want to ignore .dll files in bin folders
+!/[bB]in/*.dll
+!/[bB]in/[xX]64/*.dll
+
 [Oo]bj/
 [Ll]og/
 

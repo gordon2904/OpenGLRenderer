@@ -9,6 +9,7 @@ private:
 public:
    Texture(const char* fileName, const bool flip = false, GLPixelDataFormat format = GLPixelDataFormat::NONE, const char* assetPath = "assets\\textures\\");
    ~Texture();
+   GLuint getTextureId();
    void use(int textureUnitIndex = GL_TEXTURE0);
 };
 

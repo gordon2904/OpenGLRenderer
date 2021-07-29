@@ -5,7 +5,7 @@ class GLEntity : public GLDrawable
 {
 protected:
    glm::mat4 model; 
-   std::function<void(glm::mat4&, std::shared_ptr<Material>, const float&)> mUpdateLambda;
+   std::function<void(glm::mat4&, std::shared_ptr<Material>, const float&)> updateLambda;
    void updateModelViewProjection(std::shared_ptr<Material> material, glm::mat4& view, glm::mat4& projection);
 public:
    GLEntity(void* data, unsigned int _dataLength, std::vector<VertexAttribute>& vertexAttributes);
