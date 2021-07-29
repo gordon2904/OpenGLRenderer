@@ -13,7 +13,7 @@
 class Model
 {
 public:
-   Model(const char* path) : model(glm::mat4(1)), updateLambda([] (glm::mat4&, std::shared_ptr<Shader>, const float&, const float&) {})
+   Model(const char* path, bool flipTextures = true) : flipTextures(flipTextures), model(glm::mat4(1)), updateLambda([] (glm::mat4&, std::shared_ptr<Shader>, const float&, const float&) {})
    {
       loadModel(path);
    }
@@ -24,6 +24,7 @@ public:
    int Render(float time, float delta, glm::mat4 view, glm::mat4 projection, std::shared_ptr<Shader> overrideShader = nullptr);
 private:
    // model data
+   bool flipTextures;
    std::vector<std::shared_ptr<Mesh>> meshes;
    std::string directory; 
    std::vector<MeshTexture> textures_loaded;

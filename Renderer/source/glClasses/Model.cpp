@@ -78,13 +78,18 @@ std::shared_ptr<Mesh> Model::processMesh(aiMesh* mesh, const aiScene* scene)
          aiTextureType_SPECULAR, "texture_specular");
       textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 
-      std::vector<MeshTexture> normalMaps = loadMaterialTextures(material,
-         aiTextureType_SPECULAR, "texture_normal");
-      textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+      std::vector<MeshTexture> ambientMaps = loadMaterialTextures(material,
+         aiTextureType_AMBIENT, "texture_ambient");
+      textures.insert(textures.end(), ambientMaps.begin(), ambientMaps.end());
 
       std::vector<MeshTexture> heightMaps = loadMaterialTextures(material,
-         aiTextureType_SPECULAR, "texture_height");
+         aiTextureType_HEIGHT, "texture_height");
       textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
+
+      std::vector<MeshTexture> normalMaps = loadMaterialTextures(material,
+         aiTextureType_NORMALS, "texture_normals");
+      textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+
    }
 
    return std::make_shared<Mesh>(vertices, indices, textures);
@@ -112,7 +117,7 @@ std::vector<MeshTexture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureT
          MeshTexture texture;
          const char* path = str.C_Str();
          LOG_INFO("Attempting to create new shared ptr of texture: {0} @ {1}", path, directory);
-         texture.texture = std::make_shared<Texture>(path, true, GLPixelDataFormat::NONE, directory.c_str());
+         texture.texture = std::make_shared<Texture>(path, flipTextures, GLPixelDataFormat::NONE, directory.c_str());
          texture.type = typeName;
          texture.path = path;
          textures.push_back(texture);

@@ -240,7 +240,7 @@ int main(int argc, char** argv)
       }
 
       float angle = 20.0f;
-      model = glm::rotate(model, glm::radians(deltaTime * angle), glm::vec3(1.0f, 0.3f, 0.5f));
+      //model = glm::rotate(model, glm::radians(deltaTime * angle), glm::vec3(1.0f, 0.3f, 0.5f));
 
       shader->setFloat("time", time);
       shader->setFloat("material.shininess", 32.0f);
@@ -263,7 +263,9 @@ int main(int argc, char** argv)
    //std::shared_ptr<GLLight> lights[] = { pointLights[0] };
    //std::shared_ptr<GLDrawable> entities[] = { glLight, glLitCube };
 
-   const char* modelPath = "assets/backpack/backpack.obj"; 
+   const char* modelPath = "assets/backpack/backpack.obj";
+   //const char* modelPath = "assets/sponza/sponza.obj";
+   std::shared_ptr<Shader> debugShader = std::make_shared<Shader>("debug");
    std::shared_ptr<Shader> unlitShader = std::make_shared<Shader>("lit-model");
    std::shared_ptr<Model> model = std::make_shared<Model>(modelPath);
    model->setUpdateLambda(litUpdateLambda);
@@ -274,9 +276,11 @@ int main(int argc, char** argv)
    {
       processInput(window);
 
-      glClearColor(0.0f, 0.3f, 0.9f, 1.0f); 
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+      glClearColor(0.0f, 0.3f, 0.9f, 1.0f);
+      glEnable(GL_DEPTH_TEST);
+      glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+      glStencilMask(0x00); //stencil mask off by default
       const float time = (float)glfwGetTime();
       deltaTime = time - lastFrame;
       lastFrame = time;
@@ -291,10 +295,10 @@ int main(int argc, char** argv)
       };
 
       //update lights
-      for(auto light : pointLights)
-      {
-         light->Render(renderInputs);
-      }
+      //for(auto light : pointLights)
+      //{
+      //   light->Render(renderInputs);
+      //}
 
       ////render scene
       //for(auto entity : entities)
@@ -302,7 +306,24 @@ int main(int argc, char** argv)
       //   entity->Render(renderInputs);
       //}
 
+      model->setShader(unlitShader); 
+      glStencilFunc(GL_ALWAYS, 1, 0xFF);
+      glStencilMask(0xFF);
+      glm::mat4 mat(1);
+      model->setModelMat(mat);
       model->Render(time, deltaTime, view, perspectiveProjection);
+
+      glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+      glStencilMask(0x00);
+      glDisable(GL_DEPTH_TEST);
+      mat = glm::scale(mat, glm::vec3(1 / 1.1));
+      model->setModelMat(mat);
+      model->setShader(debugShader);
+      model->Render(time, deltaTime, view, perspectiveProjection);
+
+      glStencilMask(0xFF);
+      glStencilFunc(GL_ALWAYS, 1, 0xFF);
+      glEnable(GL_DEPTH_TEST);
 
       glfwSwapBuffers(window);
       glfwPollEvents();
@@ -345,7 +366,9 @@ int initializeGLAD()
    int maxVertexAttributes;
    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxVertexAttributes);
    LOG_INFO("Max number of vertex attributes supported: {0}", maxVertexAttributes);
-   glEnable(GL_DEPTH_TEST);
+   glEnable(GL_BLEND);
+   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+   glEnable(GL_STENCIL_TEST);
    glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
    return 1;
 }

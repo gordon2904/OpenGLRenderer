@@ -24,7 +24,7 @@ Texture::Texture(const char* fileName, const bool flip, GLPixelDataFormat format
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
    // apply linear texture filtering when the texture minifies or magnifies
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
    int width, height, channelCount;
@@ -41,7 +41,7 @@ Texture::Texture(const char* fileName, const bool flip, GLPixelDataFormat format
          else if(channelCount == 4)
             format = GLPixelDataFormat::RGBA;
       }
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, format, GL_UNSIGNED_BYTE, textureData);
+      glTexImage2D(GL_TEXTURE_2D, 0, channelCount == 4 ? GL_RGBA : GL_RGB, width, height, 0, format, GL_UNSIGNED_BYTE, textureData);
       glGenerateMipmap(GL_TEXTURE_2D);
    }
    else
