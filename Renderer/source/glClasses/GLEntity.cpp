@@ -10,7 +10,7 @@ GLEntity::GLEntity(void* data, unsigned int dataSize, std::vector<VertexAttribut
    : GLDrawable(data, dataSize, vertexAttributes, elements, _elementsLength), 
      model(glm::mat4(1.0f)), updateLambda([] (glm::mat4&, std::shared_ptr<Material>, const float&) {}) {}
 
-int GLEntity::Render(RenderInputs& input)
+int GLEntity::render(RenderInputs& input)
 {
    if(!mVisible)
    {
@@ -24,7 +24,7 @@ int GLEntity::Render(RenderInputs& input)
    updateLambda(model, material, input.time);
    updateModelViewProjection(material, input.view, input.projection);
    glBindVertexArray(vao);
-   Draw();
+   draw();
    return 1;
 }
 

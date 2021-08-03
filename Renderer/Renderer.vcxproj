@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="source\glClasses\FrameBuffer.cpp" />
     <ClCompile Include="source\glClasses\Model.cpp" />
     <ClCompile Include="source\glClasses\Mesh.cpp" />
     <ClCompile Include="source\glClasses\glLights\GLDirectionalLight.cpp" />
@@ -30,16 +31,19 @@
     <ClCompile Include="source\glClasses\Material.cpp" />
     <ClCompile Include="source\glClasses\Shader.cpp" />
     <ClCompile Include="source\glClasses\GLEntity.cpp" />
+    <ClCompile Include="source\glClasses\Textures\Texture.cpp" />
+    <ClCompile Include="source\glClasses\Textures\Texture2D.cpp" />
+    <ClCompile Include="source\glClasses\Textures\TextureCube.cpp" />
     <ClCompile Include="source\utils\logger\Logger.cpp" />
     <ClCompile Include="source\main.cpp" />
     <ClCompile Include="source\utils\glad\glad.c" />
-    <ClCompile Include="source\glClasses\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="bin\x64\freeglut.dll" />
     <None Include="bin\x86\freeglut.dll" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="source\glClasses\FrameBuffer.h" />
     <ClInclude Include="source\glClasses\Model.h" />
     <ClInclude Include="source\glClasses\Mesh.h" />
     <ClInclude Include="source\glClasses\glLights\GLDirectionalLight.h" />
@@ -52,9 +56,11 @@
     <ClInclude Include="source\glClasses\Material.h" />
     <ClInclude Include="source\glClasses\Shader.h" />
     <ClInclude Include="source\glClasses\GLEntity.h" />
+    <ClInclude Include="source\glClasses\Textures\Texture.h" />
+    <ClInclude Include="source\glClasses\Textures\Texture2D.h" />
+    <ClInclude Include="source\glClasses\Textures\TextureCube.h" />
     <ClInclude Include="source\utils\glutils\GLUtils.h" />
     <ClInclude Include="source\utils\logger\Logger.h" />
-    <ClInclude Include="source\glClasses\Texture.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

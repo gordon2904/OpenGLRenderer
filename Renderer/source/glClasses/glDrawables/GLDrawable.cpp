@@ -13,7 +13,7 @@ GLDrawable::GLDrawable(void* data, unsigned int dataSize, std::vector<VertexAttr
    {
       glGenBuffers(1, &ebo);
    }
-   const unsigned int stride = CalculateVBOStride(vertexAttributes);
+   const unsigned int stride = calculateVBOStride(vertexAttributes);
    vboDataLength = vboDataSize / stride;
 
    glBindVertexArray(vao);

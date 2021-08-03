@@ -40,7 +40,7 @@ void GLLight::setSpecularColour(const glm::vec3 colour)
 
 //lightColour
 
-int GLLight::Render(RenderInputs& input)
+int GLLight::render(RenderInputs& input)
 {
    if(!mVisible)
    {
@@ -55,6 +55,6 @@ int GLLight::Render(RenderInputs& input)
    updateLambda(model, material, input.time);
    material->setVec3("lightColour", diffuseColour);
    glBindVertexArray(vao);
-   Draw();
+   draw();
    return 1;
 }
