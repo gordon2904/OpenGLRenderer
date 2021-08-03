@@ -16,5 +16,5 @@ public:
    void setAmbientColour(const glm::vec3 colour);
    glm::vec3 getSpecularColour() const;
    void setSpecularColour(const glm::vec3 colour);
-   int virtual Render(RenderInputs& input);
+   int virtual render(RenderInputs& input);
 };

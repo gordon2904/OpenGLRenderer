@@ -1,12 +1,10 @@
-#include "Texture.h"
+#include "Texture2D.h"
 #include <glad/glad.h>
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
 #include <string>
 #include <sstream>
-#include "../utils/logger/Logger.h"
+#include "../../utils/logger/Logger.h"
 
-Texture::Texture(const char* fileName, const bool flip, GLPixelDataFormat format, const char* assetPath)
+Texture2D::Texture2D(const char* fileName, const bool flip, GLPixelDataFormat format, const char* assetPath)
 { 
    //create path string
    std::stringstream pathStringStream;
@@ -15,7 +13,7 @@ Texture::Texture(const char* fileName, const bool flip, GLPixelDataFormat format
 
    //generate GLuint texture id
    glGenTextures(1, &textureId);
-   glBindTexture(GL_TEXTURE_2D, textureId);
+   bind();
 
    // set wrapping and filtering options to our newly bound texture id
 
@@ -28,8 +26,8 @@ Texture::Texture(const char* fileName, const bool flip, GLPixelDataFormat format
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
    int width, height, channelCount;
-   stbi_set_flip_vertically_on_load(flip);
-   unsigned char* textureData = stbi_load(pathString.c_str(), &width, &height, &channelCount, 0);
+   setFlipVertical(flip);
+   unsigned char* textureData = loadImage(pathString.c_str(), width, height, channelCount);
    if(textureData)
    {
       if(format == GLPixelDataFormat::NONE)
@@ -48,29 +46,17 @@ Texture::Texture(const char* fileName, const bool flip, GLPixelDataFormat format
    {
       LOG_ERROR("Failed to load texture at path: {0}", pathString);
    }
-   stbi_image_free(textureData);
+   freeImage(textureData);
 }
 
+Texture2D::Texture2D() : Texture() {}
 
-GLuint Texture::getTextureId()
-{
-   return textureId;
-}
-
-Texture::~Texture()
+Texture2D::~Texture2D()
 {
 
 }
 
-void Texture::use(int textureUnitIndex)
+void Texture2D::bind()
 {
-   if(textureUnitIndex >= GL_TEXTURE0 && textureUnitIndex < GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS)
-   {
-      glActiveTexture(textureUnitIndex);
-      glBindTexture(GL_TEXTURE_2D, textureId);
-   }
-   else
-   {
-      LOG_ERROR("Texture attempting to use invalid texutre Unit index: {0}", textureUnitIndex);
-   }
+   glBindTexture(GL_TEXTURE_2D, textureId);
 }

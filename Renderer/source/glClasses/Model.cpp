@@ -1,5 +1,6 @@
 #include "Model.h"
 #include "../utils/logger/Logger.h"
+#include "Textures/Texture2D.h"
 
 void Model::loadModel(std::string path)
 {
@@ -41,19 +42,19 @@ std::shared_ptr<Mesh> Model::processMesh(aiMesh* mesh, const aiScene* scene)
    {
       Vertex vertex;
       // process vertex positions, normals and texture coordinates
-      vertex.Position = glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
-      vertex.Normal = glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
+      vertex.position = glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
+      vertex.normal = glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
       if(mesh->HasTextureCoords(0))
       {
-         vertex.TexCoords = glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
+         vertex.texCoords = glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
       }
       else
-         vertex.TexCoords = glm::vec2(0.0f, 0.0f);
+         vertex.texCoords = glm::vec2(0.0f, 0.0f);
       if(mesh->HasTangentsAndBitangents())
       {
          LOG_INFO("has tangent and bitangents");
-         vertex.Tangent = glm::vec3(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z);
-         vertex.Bitangent = glm::vec3(mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z);
+         vertex.tangent = glm::vec3(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z);
+         vertex.bitangent = glm::vec3(mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z);
       }
 
       vertices.push_back(vertex);
@@ -117,7 +118,7 @@ std::vector<MeshTexture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureT
          MeshTexture texture;
          const char* path = str.C_Str();
          LOG_INFO("Attempting to create new shared ptr of texture: {0} @ {1}", path, directory);
-         texture.texture = std::make_shared<Texture>(path, flipTextures, GLPixelDataFormat::NONE, directory.c_str());
+         texture.texture = std::make_shared<Texture2D>(path, flipTextures, GLPixelDataFormat::NONE, directory.c_str());
          texture.type = typeName;
          texture.path = path;
          textures.push_back(texture);
@@ -154,7 +155,7 @@ glm::vec3 Model::getPosition() const
    return glm::vec3(model[3]);
 }
 
-int Model::Render(float time, float delta, glm::mat4 view, glm::mat4 projection, std::shared_ptr<Shader> overrideShader)
+int Model::render(float time, float delta, glm::mat4 view, glm::mat4 projection, std::shared_ptr<Shader> overrideShader)
 {
    if(!visible)
    {
@@ -169,7 +170,7 @@ int Model::Render(float time, float delta, glm::mat4 view, glm::mat4 projection,
    updateModelViewProjection(shader, view, projection);
 
    for(std::shared_ptr<Mesh> mesh : meshes)
-      mesh->Draw(shader); 
+      mesh->draw(shader); 
 
    return 1;
 }

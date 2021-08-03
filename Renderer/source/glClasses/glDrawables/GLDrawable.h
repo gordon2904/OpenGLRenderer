@@ -32,12 +32,12 @@ public:
    GLDrawable(void* data, unsigned int _dataLength, std::vector<VertexAttribute>& vertexAttributes);
    GLDrawable(void* data, unsigned int _dataLength, std::vector<VertexAttribute>& vertexAttributes, void* elements, unsigned int _elementsLength);
    virtual ~GLDrawable();
-   int virtual Render(RenderInputs& input) = 0;
+   int virtual render(RenderInputs& input) = 0;
 
    //defined methods
 protected:
    //extern const std::unordered_map<unsigned int, unsigned int> GLTypeSizeLookUp;
-   unsigned int CalculateVBOStride(const std::vector<VertexAttribute>& vertexAttributes)
+   unsigned int calculateVBOStride(const std::vector<VertexAttribute>& vertexAttributes)
    {
       unsigned int stride = 0;
       for(VertexAttribute vertexAttribute : vertexAttributes)
@@ -60,7 +60,7 @@ protected:
       }
       return nullptr;
    }
-   void Draw()
+   void draw()
    {
       if(ebo > 0)
       {

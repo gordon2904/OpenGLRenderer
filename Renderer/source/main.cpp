@@ -14,9 +14,11 @@
 #include"glClasses/GLEntity.h"
 #include"glClasses/GLMultiEntity.h"
 #include"glClasses/Material.h"
-#include"glClasses/Texture.h"
+#include"glClasses/Textures/Texture2D.h"
+#include"glClasses/Textures/TextureCube.h"
 #include"glClasses/Shader.h"
 #include"glClasses/Camera.h"
+#include"glClasses/FrameBuffer.h"
 
 #include "glClasses/glLights/GLSpotLight.h"
 #include "glClasses/glLights/GLDirectionalLight.h"
@@ -54,7 +56,7 @@ float deltaTime = 0.0f;	// Time between current frame and last frame
 float lastFrame = 0.0f; // Time of last frame
 
 glm::mat4 orthographicProjection = glm::ortho(0.0f, (float)SCREEN_WIDTH, 0.0f, (float)SCREEN_HEIGHT, 0.1f, 100.f);
-glm::mat4 perspectiveProjection = glm::perspective(glm::radians(camera.fov), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, NEAR_PLANE, FAR_PLANE);
+glm::mat4 perspectiveProjection = glm::perspective(glm::radians(camera.getFov()), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, NEAR_PLANE, FAR_PLANE);
 
 glm::vec3 cubePositions[] = {
     glm::vec3(0.0f,  0.0f,  0.0f),
@@ -68,6 +70,18 @@ glm::vec3 cubePositions[] = {
     glm::vec3(1.5f,  0.2f, -1.5f),
     glm::vec3(-1.3f,  1.0f, -1.5f)
 };
+
+float quadVertices[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
+    // positions   // texCoords
+    -1.0f,  1.0f,  0.0f, 1.0f,
+    -1.0f, -1.0f,  0.0f, 0.0f,
+     1.0f, -1.0f,  1.0f, 0.0f,
+
+    -1.0f,  1.0f,  0.0f, 1.0f,
+     1.0f, -1.0f,  1.0f, 0.0f,
+     1.0f,  1.0f,  1.0f, 1.0f
+};
+const unsigned int quadDataSize = sizeof(quadVertices);
 
 
 // vec3        vec3     vec2
@@ -117,6 +131,52 @@ float cubeVertices[] = {
 };
 const unsigned int cubeDataSize = sizeof(cubeVertices);
 
+float skyboxVertices[] = {
+   // positions          
+   -1.0f,  1.0f, -1.0f,
+   -1.0f, -1.0f, -1.0f,
+    1.0f, -1.0f, -1.0f,
+    1.0f, -1.0f, -1.0f,
+    1.0f,  1.0f, -1.0f,
+   -1.0f,  1.0f, -1.0f,
+
+   -1.0f, -1.0f,  1.0f,
+   -1.0f, -1.0f, -1.0f,
+   -1.0f,  1.0f, -1.0f,
+   -1.0f,  1.0f, -1.0f,
+   -1.0f,  1.0f,  1.0f,
+   -1.0f, -1.0f,  1.0f,
+
+    1.0f, -1.0f, -1.0f,
+    1.0f, -1.0f,  1.0f,
+    1.0f,  1.0f,  1.0f,
+    1.0f,  1.0f,  1.0f,
+    1.0f,  1.0f, -1.0f,
+    1.0f, -1.0f, -1.0f,
+
+   -1.0f, -1.0f,  1.0f,
+   -1.0f,  1.0f,  1.0f,
+    1.0f,  1.0f,  1.0f,
+    1.0f,  1.0f,  1.0f,
+    1.0f, -1.0f,  1.0f,
+   -1.0f, -1.0f,  1.0f,
+
+   -1.0f,  1.0f, -1.0f,
+    1.0f,  1.0f, -1.0f,
+    1.0f,  1.0f,  1.0f,
+    1.0f,  1.0f,  1.0f,
+   -1.0f,  1.0f,  1.0f,
+   -1.0f,  1.0f, -1.0f,
+
+   -1.0f, -1.0f, -1.0f,
+   -1.0f, -1.0f,  1.0f,
+    1.0f, -1.0f, -1.0f,
+    1.0f, -1.0f, -1.0f,
+   -1.0f, -1.0f,  1.0f,
+    1.0f, -1.0f,  1.0f
+};
+const unsigned int skyboxDataSize = sizeof(skyboxVertices);
+
 float rectangleData[] = {
     // positions          // colors           // texture coords
      0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
@@ -145,11 +205,17 @@ int main(int argc, char** argv)
       VertexAttribute(3, GL_FLOAT), // position
       VertexAttribute(3, GL_FLOAT), // normals
       VertexAttribute(2, GL_FLOAT)  // tex coord
+   };   
+   
+   std::vector<VertexAttribute> skyboxVertexAttributes = {
+      VertexAttribute(3, GL_FLOAT), // position
    };
 
-   //std::shared_ptr<Texture> boxDiffuseTex = std::make_shared<Texture>("container2.png");
-   //std::shared_ptr<Texture> boxSpecularTex = std::make_shared<Texture>("container2_specular.png");
-   //std::shared_ptr<Texture> boxEmissiveTex = std::make_shared<Texture>("matrix.jpg");
+   std::vector<VertexAttribute> quadVertexAttributes = {
+      VertexAttribute(2, GL_FLOAT), // position
+      VertexAttribute(2, GL_FLOAT)  // tex coord
+   };
+
 
    std::shared_ptr<Shader> lightShader = std::make_shared<Shader>("light");
    std::shared_ptr<Material> lightMaterial = std::make_shared<Material>(lightShader);
@@ -245,7 +311,7 @@ int main(int argc, char** argv)
       shader->setFloat("time", time);
       shader->setFloat("material.shininess", 32.0f);
       shader->setMat3("normalMat", glm::mat3(glm::transpose(glm::inverse(model))));
-      shader->setVec3("viewPos", camera.Position);
+      shader->setVec3("viewPos", camera.getPosition());
    };
 
    //std::shared_ptr<Shader> litShader = std::make_shared<Shader>("lit");
@@ -263,6 +329,7 @@ int main(int argc, char** argv)
    //std::shared_ptr<GLLight> lights[] = { pointLights[0] };
    //std::shared_ptr<GLDrawable> entities[] = { glLight, glLitCube };
 
+
    const char* modelPath = "assets/backpack/backpack.obj";
    //const char* modelPath = "assets/sponza/sponza.obj";
    std::shared_ptr<Shader> debugShader = std::make_shared<Shader>("debug");
@@ -271,28 +338,61 @@ int main(int argc, char** argv)
    model->setUpdateLambda(litUpdateLambda);
    model->setShader(unlitShader);
 
+   std::shared_ptr<Shader> screenShader = std::make_shared<Shader>("post-processing/standard");
+   std::shared_ptr<Material> screenMaterial = std::make_shared<Material>(screenShader);
+   std::shared_ptr<FrameBuffer> frameBuffer = std::make_shared<FrameBuffer>(SCREEN_WIDTH, SCREEN_HEIGHT, true);
+   screenMaterial->setTexture("screenTexture", frameBuffer->getTexture());
+   std::shared_ptr<GLEntity> screenQuad = std::make_shared<GLEntity>(quadVertices, quadDataSize, quadVertexAttributes);
+   screenQuad->setMaterial(screenMaterial);
+
+   std::string faces[]
+   {
+      "skybox/right.jpg",
+      "skybox/left.jpg",
+      "skybox/top.jpg",
+      "skybox/bottom.jpg",
+      "skybox/front.jpg",
+      "skybox/back.jpg"
+   };
+
+   std::shared_ptr<Texture> skyboxTexture = std::make_shared<TextureCube>(faces);
+   std::shared_ptr<Shader> skyboxShader = std::make_shared<Shader>("skybox");
+   std::shared_ptr<Material> skyboxMaterial = std::make_shared<Material>(skyboxShader);
+   skyboxMaterial->setTexture("skybox", skyboxTexture);
+   std::shared_ptr<GLEntity> skybox = std::make_shared<GLEntity>(skyboxVertices, skyboxDataSize, skyboxVertexAttributes);
+   skybox->setMaterial(skyboxMaterial);
+
    const float radius = 10.0f;
+
+   // draw as wireframe
+   //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
    while(!glfwWindowShouldClose(window))
    {
       processInput(window);
 
-      glClearColor(0.0f, 0.3f, 0.9f, 1.0f);
-      glEnable(GL_DEPTH_TEST);
-      glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-      glStencilMask(0x00); //stencil mask off by default
       const float time = (float)glfwGetTime();
       deltaTime = time - lastFrame;
       lastFrame = time;
 
       glm::mat4 view = camera.GetViewMatrix();
+      glm::mat4 skyboxView = glm::mat4(glm::mat3(view));
       RenderInputs renderInputs =
       {
          nullptr,                //std::shared_ptr<Material> overrideMaterial;
          time,                   //float time;
-         view,                   //glm::mat4 view;
+         view,             //glm::mat4 view;
          perspectiveProjection   //glm::mat4 projection;
       };
+
+      frameBuffer->bindFrameBuffer();
+      //glClearColor(0.0f, 0.3f, 0.9f, 1.0f);
+
+
+      glEnable(GL_DEPTH_TEST);
+      glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+      glStencilMask(0x00); //stencil mask off by default
 
       //update lights
       //for(auto light : pointLights)
@@ -311,7 +411,7 @@ int main(int argc, char** argv)
       glStencilMask(0xFF);
       glm::mat4 mat(1);
       model->setModelMat(mat);
-      model->Render(time, deltaTime, view, perspectiveProjection);
+      model->render(time, deltaTime, view, perspectiveProjection);
 
       glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
       glStencilMask(0x00);
@@ -319,11 +419,26 @@ int main(int argc, char** argv)
       mat = glm::scale(mat, glm::vec3(1 / 1.1));
       model->setModelMat(mat);
       model->setShader(debugShader);
-      model->Render(time, deltaTime, view, perspectiveProjection);
+      model->render(time, deltaTime, view, perspectiveProjection);
 
       glStencilMask(0xFF);
       glStencilFunc(GL_ALWAYS, 1, 0xFF);
       glEnable(GL_DEPTH_TEST);
+
+
+      renderInputs.view = skyboxView;
+      skybox->render(renderInputs);
+
+      frameBuffer->unbindFrameBuffer();
+
+      glDepthFunc(GL_LEQUAL);
+      glClearColor(1.0f, 1.0f, 0.0f, 1.0f);
+      glClear(GL_COLOR_BUFFER_BIT);
+
+      //disable depth test to write directly to the screen and disregard recorded depth data
+      glDisable(GL_DEPTH_TEST);
+      //draw quad to screen using the frame buffer texture
+      screenQuad->render(renderInputs);
 
       glfwSwapBuffers(window);
       glfwPollEvents();
@@ -393,7 +508,7 @@ void processInput(GLFWwindow* window)
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
    camera.ProcessMouseScroll((float)yoffset);
-   perspectiveProjection = glm::perspective(glm::radians(camera.fov), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, NEAR_PLANE, FAR_PLANE);
+   perspectiveProjection = glm::perspective(glm::radians(camera.getFov()), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, NEAR_PLANE, FAR_PLANE);
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
@@ -418,7 +533,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
    SCREEN_WIDTH = width;
    SCREEN_HEIGHT = height;
    orthographicProjection = glm::ortho(0.0f, (float)SCREEN_WIDTH, 0.0f, (float)SCREEN_HEIGHT, 0.1f, 100.f);
-   perspectiveProjection = glm::perspective(glm::radians(camera.fov), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, NEAR_PLANE, FAR_PLANE);
+   perspectiveProjection = glm::perspective(glm::radians(camera.getFov()), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, NEAR_PLANE, FAR_PLANE);
    glViewport(0, 0, width, height);
 }
 
@@ -437,8 +552,8 @@ float SinLerp(const float& t)
    VertexAttribute(2, GL_FLOAT)  // tex coord
    };
 
-   std::shared_ptr<Texture> wallTexture = std::make_shared<Texture>("wall.jpg", GLPixelDataFormat::RGB);
-   std::shared_ptr<Texture> faceTexture = std::make_shared<Texture>("awesomeface.png", GLPixelDataFormat::RGBA, true);
+   std::shared_ptr<Texture> wallTexture = std::make_shared<Texture2D>("wall.jpg", GLPixelDataFormat::RGB);
+   std::shared_ptr<Texture> faceTexture = std::make_shared<Texture2D>("awesomeface.png", GLPixelDataFormat::RGBA, true);
 
    //material for rectangle
    std::shared_ptr<Shader> standardShader = std::make_shared<Shader>("standard");

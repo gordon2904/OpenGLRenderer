@@ -10,10 +10,10 @@ GLMultiEntity::GLMultiEntity(void* data, unsigned int dataSize, std::vector<Vert
 
 GLMultiEntity::GLMultiEntity(void* data, unsigned int dataSize, std::vector<VertexAttribute>& vertexAttributes, void* elements, unsigned int _elementsLength)
    : GLDrawable(data, dataSize, vertexAttributes, elements, _elementsLength),
-   models(std::vector<glm::mat4>()), mUpdateLambda([] (glm::mat4&, std::shared_ptr<Material>, const float&, unsigned int) {})
+   models(std::vector<glm::mat4>()), updateLambda([] (glm::mat4&, std::shared_ptr<Material>, const float&, unsigned int) {})
 {}
 
-int GLMultiEntity::Render(RenderInputs &input)
+int GLMultiEntity::render(RenderInputs &input)
 {
    if(!mVisible)
    {
@@ -29,9 +29,9 @@ int GLMultiEntity::Render(RenderInputs &input)
    for(unsigned int i = 0; i < models.size(); ++i)
    {
       glm::mat4 model = models[i];
-      mUpdateLambda(model, material, input.time, i);
+      updateLambda(model, material, input.time, i);
       material->setMat4("model", model);
-      Draw();
+      draw();
    }
    return 1;
 }
@@ -63,5 +63,5 @@ void GLMultiEntity::setModelCount(unsigned int count)
 
 void GLMultiEntity::setUpdateLambda(std::function<void(glm::mat4&, std::shared_ptr<Material>, const float&, unsigned int)> updateLambda)
 {
-   mUpdateLambda = updateLambda;
+   this->updateLambda = updateLambda;
 }
