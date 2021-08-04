@@ -41,6 +41,20 @@ FrameBuffer::FrameBuffer(unsigned int width, unsigned int height, bool useDepthS
    unbind();
 }
 
+void FrameBuffer::resize(int width, int height)
+{
+   texture->bind();
+   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+   if(hasDepthTexture())
+   {
+      depthTexture->bind();
+      glTexImage2D(
+         GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, width, height, 0,
+         GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr
+      );
+   }
+}
+
 FrameBuffer::~FrameBuffer()
 {
    glDeleteFramebuffers(1, &fbo);

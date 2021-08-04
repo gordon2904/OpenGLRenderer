@@ -18,6 +18,7 @@ public:
    bool hasDepthTexture();
    std::shared_ptr<Texture> getTexture();
    std::shared_ptr<Texture> getDepthTexture();
+   void resize(int width, int height);
 
 private: 
    unsigned int fbo;
