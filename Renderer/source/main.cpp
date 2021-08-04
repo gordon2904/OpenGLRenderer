@@ -55,6 +55,8 @@ Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 float deltaTime = 0.0f;	// Time between current frame and last frame
 float lastFrame = 0.0f; // Time of last frame
 
+std::vector<std::shared_ptr<FrameBuffer>> frameBuffers;
+
 glm::mat4 orthographicProjection = glm::ortho(0.0f, (float)SCREEN_WIDTH, 0.0f, (float)SCREEN_HEIGHT, 0.1f, 100.f);
 glm::mat4 perspectiveProjection = glm::perspective(glm::radians(camera.getFov()), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, NEAR_PLANE, FAR_PLANE);
 
@@ -341,6 +343,7 @@ int main(int argc, char** argv)
    std::shared_ptr<Shader> screenShader = std::make_shared<Shader>("post-processing/standard");
    std::shared_ptr<Material> screenMaterial = std::make_shared<Material>(screenShader);
    std::shared_ptr<FrameBuffer> frameBuffer = std::make_shared<FrameBuffer>(SCREEN_WIDTH, SCREEN_HEIGHT, true);
+   frameBuffers.push_back(frameBuffer);
    screenMaterial->setTexture("screenTexture", frameBuffer->getTexture());
    std::shared_ptr<GLEntity> screenQuad = std::make_shared<GLEntity>(quadVertices, quadDataSize, quadVertexAttributes);
    screenQuad->setMaterial(screenMaterial);
@@ -532,6 +535,10 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
    SCREEN_WIDTH = width;
    SCREEN_HEIGHT = height;
+   for(auto& frameBuffer : frameBuffers)
+   {
+      frameBuffer->resize(width, height);
+   }
    orthographicProjection = glm::ortho(0.0f, (float)SCREEN_WIDTH, 0.0f, (float)SCREEN_HEIGHT, 0.1f, 100.f);
    perspectiveProjection = glm::perspective(glm::radians(camera.getFov()), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, NEAR_PLANE, FAR_PLANE);
    glViewport(0, 0, width, height);
