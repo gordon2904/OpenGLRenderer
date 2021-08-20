@@ -7,7 +7,7 @@ public:
    TextureCube(std::string fileNames[6], const bool flip = false, GLPixelDataFormat format = GLPixelDataFormat::NONE, const char* assetPath = "assets\\cubemaps\\");
    TextureCube();
    virtual ~TextureCube();
-   virtual void bind();
+   virtual void bind() const;
 };
 
 

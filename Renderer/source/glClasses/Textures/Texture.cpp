@@ -4,10 +4,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-Texture::Texture()
+Texture::Texture(): textureId(0)
 {
-   //generate GLuint texture id
-   glGenTextures(1, &textureId);
 }
 
 
@@ -21,7 +19,7 @@ Texture::~Texture()
 
 }
 
-void Texture::use(int textureUnitIndex)
+void Texture::use(int textureUnitIndex) const
 {
    if(textureUnitIndex >= GL_TEXTURE0 && textureUnitIndex < GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS)
    {
@@ -48,4 +46,17 @@ unsigned char* Texture::loadImage(const char* filePath, int& height, int& width,
 void Texture::freeImage(void* imageData)
 {
    stbi_image_free(imageData);
+}
+
+void Texture::generateTexture()
+{
+   if(textureId > 0)
+   {
+      LOG_WARN("Attempt has been made to generate texture from already generated textureid");
+   }
+   else
+   {
+      //generate GLuint texture id
+      glGenTextures(1, &textureId);
+   }
 }

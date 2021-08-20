@@ -3,14 +3,14 @@
 #include "../utils/glutils/GLUtils.h"
 #include "../utils/logger/Logger.h"
 
-void updateViewProjection(std::shared_ptr<Material> material, glm::mat4& view, glm::mat4& projection);
+void updateViewProjection(const Material* material, glm::mat4& view, glm::mat4& projection);
 
 GLMultiEntity::GLMultiEntity(void* data, unsigned int dataSize, std::vector<VertexAttribute>& vertexAttributes)
    : GLMultiEntity(data, dataSize, vertexAttributes, nullptr, 0) {}
 
 GLMultiEntity::GLMultiEntity(void* data, unsigned int dataSize, std::vector<VertexAttribute>& vertexAttributes, void* elements, unsigned int _elementsLength)
    : GLDrawable(data, dataSize, vertexAttributes, elements, _elementsLength),
-   models(std::vector<glm::mat4>()), updateLambda([] (glm::mat4&, std::shared_ptr<Material>, const float&, unsigned int) {})
+   models(std::vector<glm::mat4>()), updateLambda([] (glm::mat4&, const Material*, const float&, unsigned int) {})
 {}
 
 int GLMultiEntity::render(RenderInputs &input)
@@ -19,7 +19,7 @@ int GLMultiEntity::render(RenderInputs &input)
    {
       return 0;
    }
-   std::shared_ptr<Material> material = useMaterial(input.overrideMaterial);
+   const Material* material = useMaterial(input.overrideMaterial);
    if(material == nullptr)
    {
       return 0;
@@ -36,7 +36,7 @@ int GLMultiEntity::render(RenderInputs &input)
    return 1;
 }
 
-void updateViewProjection(std::shared_ptr<Material> material, glm::mat4& view, glm::mat4& projection)
+void updateViewProjection(const Material* material, glm::mat4& view, glm::mat4& projection)
 {
    material->setMat4("view", view);
    material->setMat4("projection", projection);
@@ -61,7 +61,7 @@ void GLMultiEntity::setModelCount(unsigned int count)
    }
 }
 
-void GLMultiEntity::setUpdateLambda(std::function<void(glm::mat4&, std::shared_ptr<Material>, const float&, unsigned int)> updateLambda)
+void GLMultiEntity::setUpdateLambda(std::function<void(glm::mat4&, const Material*, const float&, unsigned int)> updateLambda)
 {
    this->updateLambda = updateLambda;
 }

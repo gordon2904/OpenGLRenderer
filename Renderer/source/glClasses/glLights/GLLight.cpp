@@ -46,7 +46,7 @@ int GLLight::render(RenderInputs& input)
    {
       return 0;
    }
-   std::shared_ptr<Material> material = useMaterial(input.overrideMaterial);
+   const Material* material = useMaterial(input.overrideMaterial);
    if(material == nullptr)
    {
       return 0;

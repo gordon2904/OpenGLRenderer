@@ -13,7 +13,8 @@ public:
    Texture();
    virtual ~Texture();
    GLuint getTextureId();
-   void use(int textureUnitIndex = GL_TEXTURE0);
-   void virtual bind() = 0;
+   void use(int textureUnitIndex = GL_TEXTURE0) const;
+   void virtual bind() const = 0;
+   void generateTexture();
 };
 

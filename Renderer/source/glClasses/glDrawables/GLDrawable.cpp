@@ -5,7 +5,7 @@
 GLDrawable::GLDrawable(void* data, unsigned int dataSize, std::vector<VertexAttribute>& vertexAttributes) : GLDrawable(data, dataSize, vertexAttributes, nullptr, 0) {}
 
 GLDrawable::GLDrawable(void* data, unsigned int dataSize, std::vector<VertexAttribute>& vertexAttributes, void* elements, unsigned int _elementsLength) 
-   : mMaterial(nullptr), ebo(0), mVisible(true), vboDataSize(dataSize), elementsLength(_elementsLength)
+   : material(nullptr), ebo(0), mVisible(true), vboDataSize(dataSize), elementsLength(_elementsLength)
 {
    glGenVertexArrays(1, &vao);
    glGenBuffers(1, &vbo);

@@ -12,12 +12,12 @@ class Material
 {
 private:
    std::shared_ptr<Shader> mShader;
-   std::unordered_map<unsigned int, std::shared_ptr<Texture>> texturesMap;
+   std::unordered_map<unsigned int, const Texture*> texturesMap;
 public:
-   void setTexture(const char* uniformName, std::shared_ptr<Texture> texture, unsigned int textureUnit = GL_TEXTURE0);
-   std::unordered_map<unsigned int, std::shared_ptr<Texture>>* getTextures();
+   void setTexture(const char* uniformName, const Texture* texture, unsigned int textureUnit = GL_TEXTURE0);
+   std::unordered_map<unsigned int, const Texture*>* getTextures();
    const std::shared_ptr<Shader> getShader();
-   void use();
+   void use() const;
    Material(std::shared_ptr<Shader> shader);
 
 

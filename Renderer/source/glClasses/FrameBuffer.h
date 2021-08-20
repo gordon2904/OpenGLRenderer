@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-#include "Textures/Texture.h"
+#include "Textures/Texture2D.h"
 
 class FrameBuffer
 {
@@ -16,14 +16,14 @@ public:
    void unbind();
    bool isComplete();
    bool hasDepthTexture();
-   std::shared_ptr<Texture> getTexture();
-   std::shared_ptr<Texture> getDepthTexture();
+   const Texture2D* getColourTexture();
+   const Texture2D* getDepthTexture();
    void resize(int width, int height);
 
 private: 
    unsigned int fbo;
    unsigned int rbo;
-   std::shared_ptr<Texture> texture;
-   std::shared_ptr<Texture> depthTexture;
+   Texture2D colourTexture;
+   Texture2D depthTexture;
 };
 

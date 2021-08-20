@@ -2,8 +2,20 @@
 #include "../utils/logger/Logger.h"
 
 Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<MeshTexture> textures) :
-   vertices(vertices), indices(indices), textures(textures)
+   vertices(vertices), indices(indices), textures(textures), VAO(0), VBO(0), EBO(0)
 {
+   setupMesh();
+}
+
+Mesh::Mesh() : VAO(0), VBO(0), EBO(0)
+{
+}
+
+void Mesh::loadMesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<MeshTexture> textures)
+{
+   this->vertices = vertices;
+   this->indices = indices;
+   this->textures = textures;
    setupMesh();
 }
 
@@ -47,7 +59,7 @@ void Mesh::setupMesh()
    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, bitangent));
 }
 
-void Mesh::setTextures(std::shared_ptr<Shader> shader)
+void Mesh::setTextures(const Shader* shader, TextureCube* skybox)
 {
    unsigned int diffuseNr = 1;
    unsigned int specularNr = 1;
@@ -69,5 +81,11 @@ void Mesh::setTextures(std::shared_ptr<Shader> shader)
          number = std::to_string(heightNr++);
       shader->setInt(("material." + name + number).c_str(), i);
       glBindTexture(GL_TEXTURE_2D, textures[i].texture->getTextureId());
+   }
+   if(skybox != nullptr)
+   {
+      glActiveTexture(GL_TEXTURE0 + textures.size());
+      shader->setInt("skybox", textures.size());
+      glBindTexture(GL_TEXTURE_CUBE_MAP, skybox->getTextureId());
    }
 }

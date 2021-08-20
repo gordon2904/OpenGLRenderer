@@ -20,10 +20,11 @@ void Model::loadModel(std::string path)
 void Model::processNode(aiNode* node, const aiScene* scene)
 {
    // process all the node's meshes (if any)
+   unsigned int initialSize = meshes.size();
    for(unsigned int i = 0; i < node->mNumMeshes; i++)
    {
       aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-      meshes.push_back(processMesh(mesh, scene));
+      processMesh(mesh, scene);
    }
    // then do the same for each of its children
    for(unsigned int i = 0; i < node->mNumChildren; i++)
@@ -32,7 +33,7 @@ void Model::processNode(aiNode* node, const aiScene* scene)
    }
 }
 
-std::shared_ptr<Mesh> Model::processMesh(aiMesh* mesh, const aiScene* scene)
+void Model::processMesh(aiMesh* mesh, const aiScene* scene)
 {
    std::vector<Vertex> vertices;
    std::vector<unsigned int> indices;
@@ -52,7 +53,6 @@ std::shared_ptr<Mesh> Model::processMesh(aiMesh* mesh, const aiScene* scene)
          vertex.texCoords = glm::vec2(0.0f, 0.0f);
       if(mesh->HasTangentsAndBitangents())
       {
-         LOG_INFO("has tangent and bitangents");
          vertex.tangent = glm::vec3(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z);
          vertex.bitangent = glm::vec3(mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z);
       }
@@ -93,7 +93,7 @@ std::shared_ptr<Mesh> Model::processMesh(aiMesh* mesh, const aiScene* scene)
 
    }
 
-   return std::make_shared<Mesh>(vertices, indices, textures);
+   meshes.push_back(std::make_shared<Mesh>(vertices, indices, textures));
 }
 
 std::vector<MeshTexture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName)
@@ -138,14 +138,14 @@ glm::mat4* Model::getModelMat()
    return &model;
 }
 
-void Model::updateModelViewProjection(std::shared_ptr<Shader> shader, glm::mat4& view, glm::mat4& projection)
+void Model::updateModelViewProjection(const Shader* shader, glm::mat4& view, glm::mat4& projection)
 {
    shader->setMat4("model", model);
    shader->setMat4("view", view);
    shader->setMat4("projection", projection);
 }
 
-void Model::setUpdateLambda(std::function<void(glm::mat4&, std::shared_ptr<Shader>, const float&, const float&)> updateLambda)
+void Model::setUpdateLambda(std::function<void(glm::mat4&, const Shader*, const float&, const float&)> updateLambda)
 {
    this->updateLambda = updateLambda;
 }
@@ -155,22 +155,26 @@ glm::vec3 Model::getPosition() const
    return glm::vec3(model[3]);
 }
 
-int Model::render(float time, float delta, glm::mat4 view, glm::mat4 projection, std::shared_ptr<Shader> overrideShader)
+int Model::render(float time, float delta, glm::mat4 view, glm::mat4 projection, const Shader* overrideShader)
 {
    if(!visible)
    {
+      LOG_INFO("model not visible");
       return 0;
    }
-   std::shared_ptr<Shader> shader = useShader(overrideShader);
+   const Shader* shader = useShader(overrideShader);
    if(shader == nullptr)
    {
+      LOG_WARN("model no shader");
       return 0;
    }
    updateLambda(model, shader, time, delta);
    updateModelViewProjection(shader, view, projection);
 
-   for(std::shared_ptr<Mesh> mesh : meshes)
-      mesh->draw(shader); 
+   for(unsigned int i = 0; i < meshes.size(); ++i)
+   {
+      meshes[i]->draw(shader, cubemap);
+   }
 
    return 1;
 }

@@ -4,7 +4,7 @@
 #include <sstream>
 #include "../../utils/logger/Logger.h"
 
-Texture2D::Texture2D(const char* fileName, const bool flip, GLPixelDataFormat format, const char* assetPath)
+Texture2D::Texture2D(const char* fileName, const bool flip, GLPixelDataFormat format, const char* assetPath) : Texture()
 { 
    //create path string
    std::stringstream pathStringStream;
@@ -12,7 +12,7 @@ Texture2D::Texture2D(const char* fileName, const bool flip, GLPixelDataFormat fo
    const std::string pathString = pathStringStream.str();
 
    //generate GLuint texture id
-   glGenTextures(1, &textureId);
+   generateTexture();
    bind();
 
    // set wrapping and filtering options to our newly bound texture id
@@ -56,7 +56,7 @@ Texture2D::~Texture2D()
 
 }
 
-void Texture2D::bind()
+void Texture2D::bind() const
 {
    glBindTexture(GL_TEXTURE_2D, textureId);
 }

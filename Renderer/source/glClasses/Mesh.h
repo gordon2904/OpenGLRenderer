@@ -1,6 +1,6 @@
 #pragma once
 #include "glDrawables/GLDrawable.h"
-#include "Textures/Texture.h"
+#include "Textures/TextureCube.h"
 #include <vector>
 
 
@@ -24,11 +24,13 @@ class Mesh
 {
 public:
    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<MeshTexture> textures);
+   Mesh();
+   void loadMesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<MeshTexture> textures);
    virtual ~Mesh();
-   void draw(std::shared_ptr<Shader> shader)
+   void draw(const Shader* shader, TextureCube* skybox)
    {
       glBindVertexArray(VAO);
-      setTextures(shader);
+      setTextures(shader, skybox);
       glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
    }
 protected:
@@ -37,7 +39,7 @@ protected:
    std::vector<MeshTexture> textures;
    unsigned int VAO, VBO, EBO;
 
-   void setTextures(std::shared_ptr<Shader> shader);
+   void setTextures(const Shader* shader, TextureCube* skybox);
    void setupMesh();
 
 public:

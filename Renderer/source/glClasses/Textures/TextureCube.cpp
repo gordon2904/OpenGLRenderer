@@ -13,10 +13,10 @@ const unsigned int textureOrder[] = {
    GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
 };
 
-TextureCube::TextureCube(std::string fileNames[6], const bool flip, GLPixelDataFormat format, const char* assetPath)
+TextureCube::TextureCube(std::string fileNames[6], const bool flip, GLPixelDataFormat format, const char* assetPath) : Texture()
 {
    //generate GLuint texture id
-   glGenTextures(1, &textureId);
+   generateTexture();
    bind();
 
    int width, height, channelCount; 
@@ -61,7 +61,7 @@ TextureCube::~TextureCube()
 
 }
 
-void TextureCube::bind()
+void TextureCube::bind() const
 {
    glBindTexture(GL_TEXTURE_CUBE_MAP, textureId);
 }

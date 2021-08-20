@@ -8,7 +8,7 @@
 
 struct RenderInputs
 {
-   std::shared_ptr<Material> overrideMaterial = nullptr;
+   Material* overrideMaterial = nullptr;
    float time;
    glm::mat4 view;
    glm::mat4 projection;
@@ -26,7 +26,7 @@ protected:
    unsigned int vao;
    unsigned int vbo;
    unsigned int ebo;
-   std::shared_ptr<Material> mMaterial;
+   Material* material;
    bool mVisible; 
 public:
    GLDrawable(void* data, unsigned int _dataLength, std::vector<VertexAttribute>& vertexAttributes);
@@ -46,17 +46,17 @@ protected:
       }
       return stride;
    }
-   std::shared_ptr<Material> useMaterial(const std::shared_ptr<Material> overrideMaterial)
+   const Material* useMaterial(const Material* overrideMaterial)
    {
       if(overrideMaterial != nullptr)
       {
          overrideMaterial->use();
          return overrideMaterial;
       }
-      else if(mMaterial != nullptr)
+      else if(material != nullptr)
       {
-         mMaterial->use();
-         return mMaterial;
+         material->use();
+         return material;
       }
       return nullptr;
    }
@@ -76,8 +76,8 @@ public:
    {
       mVisible = visible;
    }
-   void setMaterial(std::shared_ptr<Material> material)
+   void setMaterial(Material* material)
    {
-      mMaterial = material;
+      this->material = material;
    }
 };

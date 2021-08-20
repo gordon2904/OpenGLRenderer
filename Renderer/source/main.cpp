@@ -55,7 +55,7 @@ Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 float deltaTime = 0.0f;	// Time between current frame and last frame
 float lastFrame = 0.0f; // Time of last frame
 
-std::vector<std::shared_ptr<FrameBuffer>> frameBuffers;
+std::vector<FrameBuffer*> frameBuffers;
 
 glm::mat4 orthographicProjection = glm::ortho(0.0f, (float)SCREEN_WIDTH, 0.0f, (float)SCREEN_HEIGHT, 0.1f, 100.f);
 glm::mat4 perspectiveProjection = glm::perspective(glm::radians(camera.getFov()), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, NEAR_PLANE, FAR_PLANE);
@@ -244,7 +244,7 @@ int main(int argc, char** argv)
    for(int i = 0; i < 4; ++i)
    {
       const std::shared_ptr<GLPointLight> pointLight = std::make_shared<GLPointLight>(cubeVertices, cubeDataSize, cubeVertexAttributes);
-      pointLight->setMaterial(lightMaterial);
+      pointLight->setMaterial(lightMaterial.get());
       pointLight->setModelMat(glm::translate(lightModel, pointLightPositions[i]));
       pointLight->setAmbientColour(pointLightColours[i] * 0.1f);
       pointLight->setDiffuseColour(pointLightColours[i]);
@@ -257,7 +257,7 @@ int main(int argc, char** argv)
    //glLight->setModelMat(lightModel);
 
 
-   std::function<void(glm::mat4&, std::shared_ptr<Shader>, const float&, const float& delta)> litUpdateLambda = [&] (glm::mat4& model, std::shared_ptr<Shader> shader, const float& time, const float& delta) {
+   std::function<void(glm::mat4&, const Shader*, const float&, const float& delta)> litUpdateLambda = [&] (glm::mat4& model, const Shader* shader, const float& time, const float& delta) {
 
       //update point lights
       shader->setInt("pointLightsLength", pointLights.size());
@@ -336,17 +336,20 @@ int main(int argc, char** argv)
    //const char* modelPath = "assets/sponza/sponza.obj";
    std::shared_ptr<Shader> debugShader = std::make_shared<Shader>("debug");
    std::shared_ptr<Shader> unlitShader = std::make_shared<Shader>("lit-model");
-   std::shared_ptr<Model> model = std::make_shared<Model>(modelPath);
-   model->setUpdateLambda(litUpdateLambda);
-   model->setShader(unlitShader);
+   std::shared_ptr<Shader> reflectiveShader = std::make_shared<Shader>("reflective");
+   std::shared_ptr<Material> reflectiveMaterial = std::make_shared<Material>(reflectiveShader);
+   Model model(modelPath);
+   model.setVisible(true);
+   //model.setUpdateLambda(litUpdateLambda);
+   model.setShader(reflectiveShader.get());
 
    std::shared_ptr<Shader> screenShader = std::make_shared<Shader>("post-processing/standard");
    std::shared_ptr<Material> screenMaterial = std::make_shared<Material>(screenShader);
-   std::shared_ptr<FrameBuffer> frameBuffer = std::make_shared<FrameBuffer>(SCREEN_WIDTH, SCREEN_HEIGHT, true);
-   frameBuffers.push_back(frameBuffer);
-   screenMaterial->setTexture("screenTexture", frameBuffer->getTexture());
+   FrameBuffer frameBuffer(SCREEN_WIDTH, SCREEN_HEIGHT, false);
+   frameBuffers.push_back(&frameBuffer);
+   screenMaterial->setTexture("screenTexture", frameBuffer.getColourTexture());
    std::shared_ptr<GLEntity> screenQuad = std::make_shared<GLEntity>(quadVertices, quadDataSize, quadVertexAttributes);
-   screenQuad->setMaterial(screenMaterial);
+   screenQuad->setMaterial(screenMaterial.get());
 
    std::string faces[]
    {
@@ -361,14 +364,26 @@ int main(int argc, char** argv)
    std::shared_ptr<Texture> skyboxTexture = std::make_shared<TextureCube>(faces);
    std::shared_ptr<Shader> skyboxShader = std::make_shared<Shader>("skybox");
    std::shared_ptr<Material> skyboxMaterial = std::make_shared<Material>(skyboxShader);
-   skyboxMaterial->setTexture("skybox", skyboxTexture);
+   skyboxMaterial->setTexture("skybox", skyboxTexture.get());
    std::shared_ptr<GLEntity> skybox = std::make_shared<GLEntity>(skyboxVertices, skyboxDataSize, skyboxVertexAttributes);
-   skybox->setMaterial(skyboxMaterial);
+   skybox->setMaterial(skyboxMaterial.get());
+   model.setCubeMap((TextureCube*)skyboxTexture.get());
 
-   const float radius = 10.0f;
+   std::function<void(glm::mat4&, const Shader*, const float&, const float& delta)> reflectiveUpdateLambda = [&] (glm::mat4& model, const Shader* shader, const float& time, const float& delta) {
+      shader->setVec3("cameraPos", camera.getPosition());
+   };
+
+   std::function<void(glm::mat4&, const Material*, const float&, const float& delta)> cubeLambda = [&] (glm::mat4& model, const Material* material, const float& time, const float& delta) {
+      material->setVec3("cameraPos", camera.getPosition());
+   };
+
+   std::shared_ptr<GLEntity> glCube = std::make_shared<GLEntity>(cubeVertices, cubeDataSize, cubeVertexAttributes);
+   //glCube->setMaterial(reflectiveMaterial.get());
+   //glCube->setUpdateLambda(reflectiveUpdateLambda);
+
+   model.setUpdateLambda(reflectiveUpdateLambda);
 
    // draw as wireframe
-   //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
    while(!glfwWindowShouldClose(window))
    {
@@ -384,58 +399,43 @@ int main(int argc, char** argv)
       {
          nullptr,                //std::shared_ptr<Material> overrideMaterial;
          time,                   //float time;
-         view,             //glm::mat4 view;
+         view,                   //glm::mat4 view;
          perspectiveProjection   //glm::mat4 projection;
       };
 
-      frameBuffer->bindFrameBuffer();
-      //glClearColor(0.0f, 0.3f, 0.9f, 1.0f);
-
+      frameBuffer.bindFrameBuffer();
 
       glEnable(GL_DEPTH_TEST);
+      glDepthFunc(GL_LEQUAL);
       glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-      glStencilMask(0x00); //stencil mask off by default
-
-      //update lights
-      //for(auto light : pointLights)
-      //{
-      //   light->Render(renderInputs);
-      //}
-
-      ////render scene
-      //for(auto entity : entities)
-      //{
-      //   entity->Render(renderInputs);
-      //}
-
-      model->setShader(unlitShader); 
-      glStencilFunc(GL_ALWAYS, 1, 0xFF);
-      glStencilMask(0xFF);
+      //glStencilMask(0x00);
+      
+      //glStencilFunc(GL_ALWAYS, 1, 0xFF);
+      //glStencilMask(0xFF);
       glm::mat4 mat(1);
-      model->setModelMat(mat);
-      model->render(time, deltaTime, view, perspectiveProjection);
+      model.setModelMat(mat);
+      model.render(time, deltaTime, view, perspectiveProjection);
+      //glCube->render(renderInputs);
 
-      glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-      glStencilMask(0x00);
-      glDisable(GL_DEPTH_TEST);
-      mat = glm::scale(mat, glm::vec3(1 / 1.1));
-      model->setModelMat(mat);
-      model->setShader(debugShader);
-      model->render(time, deltaTime, view, perspectiveProjection);
+      //glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+      //glStencilMask(0x00);
+      //mat = glm::scale(mat, glm::vec3(1 / 1.2));
+      //model->setModelMat(mat);
+      //model->setShader(debugShader);
+      //model->render(time, deltaTime, view, perspectiveProjection);
 
-      glStencilMask(0xFF);
-      glStencilFunc(GL_ALWAYS, 1, 0xFF);
-      glEnable(GL_DEPTH_TEST);
+      //glStencilMask(0xFF);
+      //glStencilFunc(GL_ALWAYS, 1, 0xFF);
 
+      //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
       renderInputs.view = skyboxView;
       skybox->render(renderInputs);
 
-      frameBuffer->unbindFrameBuffer();
+      frameBuffer.unbindFrameBuffer();
 
-      glDepthFunc(GL_LEQUAL);
-      glClearColor(1.0f, 1.0f, 0.0f, 1.0f);
+      glClearColor(0.5f, 0.0f, 0.2f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT);
 
       //disable depth test to write directly to the screen and disregard recorded depth data

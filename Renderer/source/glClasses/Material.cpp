@@ -10,7 +10,7 @@ Material::Material(std::shared_ptr<Shader> shader) : mShader(shader)
 
 }
 
-void Material::setTexture(const char* uniformName, std::shared_ptr<Texture> texture, unsigned int textureUnit)
+void Material::setTexture(const char* uniformName, const Texture* texture, unsigned int textureUnit)
 {
    if(textureUnit >= GL_TEXTURE0 && textureUnit < GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS)
    {
@@ -25,12 +25,12 @@ void Material::setTexture(const char* uniformName, std::shared_ptr<Texture> text
    }
 }
 
-std::unordered_map<unsigned int, std::shared_ptr<Texture>>* Material::getTextures()
+std::unordered_map<unsigned int, const Texture*>* Material::getTextures()
 {
    return &texturesMap;
 }
 
-void Material::use()
+void Material::use() const
 {
    mShader->use();
    if(texturesMap.size() > 0)
