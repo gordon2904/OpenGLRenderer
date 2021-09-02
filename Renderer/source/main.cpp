@@ -35,7 +35,7 @@
 
 #include "glClasses/Model.h"
 
-float SinLerp(const float& t);
+float sinLerp(const float& t);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
@@ -409,25 +409,10 @@ int run()
       glDepthFunc(GL_LEQUAL);
       glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-      //glStencilMask(0x00);
 
-      //glStencilFunc(GL_ALWAYS, 1, 0xFF);
-      //glStencilMask(0xFF);
       glm::mat4 mat(1);
       model.setModelMat(mat);
       model.render(time, deltaTime, view, perspectiveProjection);
-
-      //glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-      //glStencilMask(0x00);
-      //mat = glm::scale(mat, glm::vec3(1 / 1.2));
-      //model->setModelMat(mat);
-      //model->setShader(debugShader);
-      //model->render(time, deltaTime, view, perspectiveProjection);
-
-      //glStencilMask(0xFF);
-      //glStencilFunc(GL_ALWAYS, 1, 0xFF);
-
-      //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
       renderInputs.view = skyboxView;
       skybox->render(renderInputs);
@@ -441,8 +426,6 @@ int run()
       glDisable(GL_DEPTH_TEST);
       //draw quad to screen using the frame buffer texture
       screenQuad->render(renderInputs);
-
-
 
       glfwSwapBuffers(window);
       glfwPollEvents();
@@ -546,60 +529,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 
-float SinLerp(const float& t)
+float sinLerp(const float& t)
 {
    return 0.5f + (sin(t) * 0.5f);
 }
-
-//OLD USED GLEntities and materials
-/*
-
-   std::vector<VertexAttribute> rectangleVertexAttributes = {
-   VertexAttribute(3, GL_FLOAT), // position
-   VertexAttribute(3, GL_FLOAT), // vertex colour
-   VertexAttribute(2, GL_FLOAT)  // tex coord
-   };
-
-   std::shared_ptr<Texture> wallTexture = std::make_shared<Texture2D>("wall.jpg", GLPixelDataFormat::RGB);
-   std::shared_ptr<Texture> faceTexture = std::make_shared<Texture2D>("awesomeface.png", GLPixelDataFormat::RGBA, true);
-
-   //material for rectangle
-   std::shared_ptr<Shader> standardShader = std::make_shared<Shader>("standard");
-   std::shared_ptr<Material> standardMaterial = std::make_shared<Material>(standardShader);
-   standardMaterial->setTexture("texture1", wallTexture, GL_TEXTURE0);
-   standardMaterial->setTexture("texture2", faceTexture, GL_TEXTURE0+1);
-
-   //material for cube
-   std::shared_ptr<Shader> cubeShader = std::make_shared<Shader>("cube");
-   std::shared_ptr<Material> cubeMaterial = std::make_shared<Material>(cubeShader);
-   cubeMaterial->setTexture("texture1", wallTexture, GL_TEXTURE0);
-   cubeMaterial->setTexture("texture2", faceTexture, GL_TEXTURE0 + 1);
-
-
-   //update lambda to be used across rectangle and cube
-   std::function<void(glm::mat4&, std::shared_ptr<Material>, const float&)> updateLambda = [&](glm::mat4& localPos, std::shared_ptr<Material> material, const float& time) {
-      localPos = glm::rotate(localPos, glm::radians(time * -55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-   };
-
-   //update lambda to be used across GLMultiEntity
-   std::function<void(glm::mat4&, std::shared_ptr<Material>, const float&, unsigned int)> updateMultiLambda = [&] (glm::mat4& localPos, std::shared_ptr<Material> material, const float& time, unsigned int index) {
-      localPos = glm::mat4(1.0f);
-      localPos = glm::translate(localPos, cubePositions[index]);
-      float angle = 20.0f * index;
-      localPos = glm::rotate(localPos, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-   };
-
-   std::shared_ptr<GLEntity> glCube = std::make_shared<GLEntity>(cubeVertices, cubeDataSize, cubeVertexAttributes);
-   glCube->setMaterial(cubeMaterial);
-   glCube->setUpdateLambda(updateLambda);
-
-   std::shared_ptr<GLMultiEntity> glMultiCube = std::make_shared<GLMultiEntity>(cubeVertices, cubeDataSize, cubeVertexAttributes);
-   glMultiCube->setModelCount(10);
-   glMultiCube->setMaterial(cubeMaterial);
-   glMultiCube->setUpdateLambda(updateMultiLambda);
-
-   std::shared_ptr<GLEntity> glRectangle = std::make_shared<GLEntity>(rectangleData, rectangleDataSize, rectangleVertexAttributes, rectangleIndices, rectangleIndicesLength);
-   glRectangle->setMaterial(standardMaterial);
-   glRectangle->setUpdateLambda(updateLambda);
-
-*/
