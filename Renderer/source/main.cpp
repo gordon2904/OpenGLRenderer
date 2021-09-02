@@ -4,13 +4,19 @@
 * 
 */
 
+#ifdef _DEBUG
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>    
+#endif // DEBUG
+
 #include "utils/logger/Logger.h"
 #include "utils/glutils/GLUtils.h"
 #include<iostream>
 #include<sstream>
 #include<glad/glad.h>
 #include<GLFW/glfw3.h>
-
+ 
 #include"glClasses/GLEntity.h"
 #include"glClasses/GLMultiEntity.h"
 #include"glClasses/Material.h"
@@ -36,6 +42,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window); 
 int initializeGLFWwindow();
 int initializeGLAD();
+int run();
 
 GLFWwindow* window = nullptr;
 
@@ -196,10 +203,21 @@ unsigned int rectangleIndicesLength = sizeof(rectangleIndices) / sizeof(unsigned
 
 int main(int argc, char** argv)
 {
-   if(!initializeGLFWwindow()) {
+   #ifdef _DEBUG
+      _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+   #endif // DEBUG
+   run();
+   return 0;
+}
+
+int run()
+{
+   if(!initializeGLFWwindow())
+   {
       return -1;
-   }   
-   if(!initializeGLAD()) {
+   }
+   if(!initializeGLAD())
+   {
       return -1;
    }
 
@@ -207,8 +225,8 @@ int main(int argc, char** argv)
       VertexAttribute(3, GL_FLOAT), // position
       VertexAttribute(3, GL_FLOAT), // normals
       VertexAttribute(2, GL_FLOAT)  // tex coord
-   };   
-   
+   };
+
    std::vector<VertexAttribute> skyboxVertexAttributes = {
       VertexAttribute(3, GL_FLOAT), // position
    };
@@ -234,7 +252,7 @@ int main(int argc, char** argv)
       glm::vec3(2.3f, -3.3f, -4.0f),
       glm::vec3(-4.0f,  2.0f, -12.0f),
       glm::vec3(0.0f,  0.0f, -3.0f)
-   };   
+   };
    glm::vec3 pointLightColours[] = {
       glm::vec3(0.7f,  0.2f,  1.0f),
       glm::vec3(0.2f, 0.0f, 0.8f),
@@ -252,10 +270,11 @@ int main(int argc, char** argv)
       pointLights.push_back(pointLight);
    }
 
-   //std::shared_ptr<GLEntity> glLight = std::make_shared<GLEntity>(cubeVertices, cubeDataSize, cubeVertexAttributes);
-   //glLight->setMaterial(lightMaterial);
-   //glLight->setModelMat(lightModel);
+   std::shared_ptr<GLEntity> glLight = std::make_shared<GLEntity>(cubeVertices, cubeDataSize, cubeVertexAttributes);
+   glLight->setMaterial(lightMaterial.get());
+   glLight->setModelMat(lightModel);
 
+   
 
    std::function<void(glm::mat4&, const Shader*, const float&, const float& delta)> litUpdateLambda = [&] (glm::mat4& model, const Shader* shader, const float& time, const float& delta) {
 
@@ -316,31 +335,15 @@ int main(int argc, char** argv)
       shader->setVec3("viewPos", camera.getPosition());
    };
 
-   //std::shared_ptr<Shader> litShader = std::make_shared<Shader>("lit");
-   //std::shared_ptr<Material> litMaterial = std::make_shared<Material>(litShader); 
-   //litMaterial->getShader()->use();
-   //litMaterial->setTexture("material.diffuse", boxDiffuseTex, GL_TEXTURE0);
-   //litMaterial->setTexture("material.specular", boxSpecularTex, GL_TEXTURE0 + 1);
-   //litMaterial->setTexture("material.emission", boxEmissiveTex, GL_TEXTURE0 + 2);
-
-   //std::shared_ptr<GLMultiEntity> glLitCube = std::make_shared <GLMultiEntity> (cubeVertices, cubeDataSize, cubeVertexAttributes);
-   //glLitCube->setModelCount(10);
-   //glLitCube->setMaterial(litMaterial);
-   //glLitCube->setUpdateLambda(litUpdateLambda);
-
-   //std::shared_ptr<GLLight> lights[] = { pointLights[0] };
-   //std::shared_ptr<GLDrawable> entities[] = { glLight, glLitCube };
-
 
    const char* modelPath = "assets/backpack/backpack.obj";
-   //const char* modelPath = "assets/sponza/sponza.obj";
    std::shared_ptr<Shader> debugShader = std::make_shared<Shader>("debug");
    std::shared_ptr<Shader> unlitShader = std::make_shared<Shader>("lit-model");
    std::shared_ptr<Shader> reflectiveShader = std::make_shared<Shader>("reflective");
    std::shared_ptr<Material> reflectiveMaterial = std::make_shared<Material>(reflectiveShader);
    Model model(modelPath);
    model.setVisible(true);
-   //model.setUpdateLambda(litUpdateLambda);
+   model.setUpdateLambda(litUpdateLambda);
    model.setShader(reflectiveShader.get());
 
    std::shared_ptr<Shader> screenShader = std::make_shared<Shader>("post-processing/standard");
@@ -377,10 +380,6 @@ int main(int argc, char** argv)
       material->setVec3("cameraPos", camera.getPosition());
    };
 
-   std::shared_ptr<GLEntity> glCube = std::make_shared<GLEntity>(cubeVertices, cubeDataSize, cubeVertexAttributes);
-   //glCube->setMaterial(reflectiveMaterial.get());
-   //glCube->setUpdateLambda(reflectiveUpdateLambda);
-
    model.setUpdateLambda(reflectiveUpdateLambda);
 
    // draw as wireframe
@@ -405,18 +404,18 @@ int main(int argc, char** argv)
 
       frameBuffer.bindFrameBuffer();
 
+
       glEnable(GL_DEPTH_TEST);
       glDepthFunc(GL_LEQUAL);
       glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
       //glStencilMask(0x00);
-      
+
       //glStencilFunc(GL_ALWAYS, 1, 0xFF);
       //glStencilMask(0xFF);
       glm::mat4 mat(1);
       model.setModelMat(mat);
       model.render(time, deltaTime, view, perspectiveProjection);
-      //glCube->render(renderInputs);
 
       //glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
       //glStencilMask(0x00);
@@ -442,6 +441,8 @@ int main(int argc, char** argv)
       glDisable(GL_DEPTH_TEST);
       //draw quad to screen using the frame buffer texture
       screenQuad->render(renderInputs);
+
+
 
       glfwSwapBuffers(window);
       glfwPollEvents();
